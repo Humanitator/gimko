@@ -1,0 +1,30 @@
+// Dark
+$text: #ffffff;
+$bg: #3f7f32;
+$primary: #77d21c;
+$secondary: #084908;
+$accent: #f2f22b;
+$primarycontrast: #ff8f8f;
+$secondarycontrast: #64d97b;
+$accentcontrast: #64d97b;
+$textcontrast: #ffdd00;
+$bgcontrast: #ffdd00;
+
+article {
+    margin: auto;
+    width: 30%;
+    padding: 2%;
+    border-radius: 20pt;
+    background-color: $secondary;
+}
+
+article > * {
+    text-align: center;
+}
+
+article > * > * {
+    align-self: center;
+    border: none;
+    border-radius: 3pt;
+    padding: 5pt;
+}

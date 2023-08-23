@@ -1,30 +1,50 @@
+<script setup>
+  import { ref } from 'vue';
+  import { getAuth, onAuthStateChanged, signOut} from "firebase/auth"
+  import { useRouter } from 'vue-router';
+  import { onMounted } from 'vue';
+
+  const isLoggedIn = ref(false); // Get refrence to router
+  const router = useRouter();
+  
+  const gotAuth = ref(true);
+  let auth;
+  onMounted(() => {
+    auth = getAuth();
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        isLoggedIn.value = true;
+      } else {
+        isLoggedIn.value = false;
+      }
+      console.log(isLoggedIn.value);
+    });
+  });
+  
+  const handleSignOut = () => {
+    signOut(auth).then(() => {
+      router.push("/");
+    });
+  };
+
+
+</script>
+
 <template>
   <nav>
-    <router-link to="/">Home</router-link> |
+    <router-link to="/" style="flex-basis: 2;">Home</router-link>
     <router-link to="/about">About</router-link>
+    <router-link to="/tree">Tree</router-link>
+    <router-link v-if="!isLoggedIn" to="/sign-in">Sign in</router-link>
+    <router-link v-if="!isLoggedIn" to="/register">Register</router-link>
+    <button v-if="isLoggedIn" @click="handleSignOut">Sign Out</button>
   </nav>
-  <router-view/>
+  <div class="page-content">
+    <router-view/>
+  </div>
 </template>
 
 <style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
-}
+  @import "./assets/css/base.scss";
+  @import "./assets/css/colors.scss";
 </style>

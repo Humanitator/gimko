@@ -1,0 +1,90 @@
+/* dark */
+$text: #ffffff;
+$background: #3f7f32;
+$primary: #77d21c;
+$secondary: #084908;
+$accent: #eaea38;
+
+/* light */
+$text-light: #3f7f32;
+$background-light: #ffffff;
+$primary-light: #77d21c;
+$secondary-light: #ecfdec;
+$accent-light: #7c7c0d;
+
+// ----- New Tree ------
+.new-tree-container {
+    position: relative;
+    margin: 20pt auto;
+    padding: 10pt 3%;
+    text-align: center;
+
+    max-width: 400pt;
+}
+
+.new-tree-container > * {
+    border: none;
+    padding: 10pt auto;
+}
+
+.new-tree-container > p > input {
+    padding: 10pt;
+}
+
+.new-tree-container button {
+    margin: 10pt;
+    padding: 15pt 2%;
+    background-color: $primary;
+    color: $secondary;
+}
+
+.new-tree-container > h2 {
+    font-size: 24pt;
+}
+
+// ----- Tree List ------
+.tree-list-container {
+    display: flex;
+    position: relative;
+}
+
+.tree-container {
+    margin: 0 1%;
+    position: relative;
+    padding: 10pt;
+    
+    width: 10%;
+
+    text-align: center;
+    font-family: "Nunito", sans-serif;
+    font-size: 18pt;
+    font-weight: 300;
+    
+    background-color: transparent;
+}
+
+.tree-button {
+    position: relative;
+    border-radius: 5pt;
+
+    margin: 0 1%;
+
+    width: 100%;
+    max-width: 200pt;
+    height: 50pt;
+}
+
+.tree-button > .bg {
+    transition: opacity 1s;
+}
+
+.tree-button:hover > .bg {
+    opacity: 30%;
+    transition: opacity 1s;
+}
+
+
+
+h2 {
+    font-weight: 300;
+}

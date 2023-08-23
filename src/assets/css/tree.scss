@@ -1,0 +1,333 @@
+// Dark
+$text: #ffffff;
+$bg: #3f7f32;
+$primary: #77d21c;
+$secondary: #084908;
+$accent: #f2f22b;
+$primarycontrast: #ff8f8f;
+$secondarycontrast: #64d97b;
+$accentcontrast: #64d97b;
+$textcontrast: #ffdd00;
+$bgcontrast: #ffdd00;
+
+// ---- Defaults ----
+
+article {
+    margin: 10pt 3%;
+}
+
+article p {
+    font-size: 16pt;
+}
+
+// ---- Add first person ----
+.add-person-container {
+    position: absolute;
+    margin: 0 auto;
+    padding: 5pt 0;
+    width: 50%;
+    max-width: 400pt;
+    left: 50%;
+    top: 50%;
+    transform: translateX(-50%) translateY(50%);
+
+    text-align: center;
+}
+
+.add-person-container h2 {
+    font-weight: 400;
+    font-size: 20pt;
+}
+
+.add-person-container p {
+    font-size: 14pt;
+    margin: 10pt 0;
+}
+
+.add-person-container button {
+    position: relative;
+    margin: 10pt;
+    background-color: $primary;
+    color: $secondary;
+}
+
+// In tree
+.add-person-intree-container {
+    position: relative;
+    padding: 5pt;
+    text-align: center;
+}
+
+.add-person-intree-container button {
+    margin: 5pt auto;
+    background-color: $primary;
+    padding: 5pt;
+}
+
+// ---- People ----
+.people-tree {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+.tree-gen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+.person {
+    position: absolute;
+    margin: 0;
+
+    transform: translateX(-50%) translateY(-50%);
+
+    border-radius: 10pt;
+    z-index: 1;
+}
+
+.person h2 {
+    text-align: center;
+    font-size: 20pt;
+    font-weight: 400;
+
+    transition: all ease 0.5s;
+}
+
+.person .bg {
+    opacity: 100%;
+    background-color: $secondary;
+
+    transition: all ease 0.5s;
+}
+
+// Info
+.person-actions {
+    position: absolute;
+    margin: 0;
+    display: flex;
+
+    height: 50%;
+    width: 100%;
+    top: 0;
+    right: 0;
+
+    border-radius: inherit;
+    z-index: -6;
+    text-align: center;
+
+    background-color: $primary;
+
+    transition: all ease 0.3s;
+}
+
+.person-actions > button {
+    position: relative;
+    padding: 5%;
+    width: auto;
+    margin: 7pt auto;
+
+    z-index: 5;
+}
+
+.person-actions > button > .bg {
+    opacity: 20%;
+}
+
+.person:hover > .person-actions {
+    transform: translateY(100%);
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+
+    transition: all ease 0.3s;
+}
+
+.person:hover > .bg {
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+    height: 50%;
+
+    transition: all ease 0.5s;
+}
+
+.person:hover > h2 {
+    transform: translateY(-100%);
+
+    transition: all ease 0.5s;
+}
+
+.person-actions > * {
+    margin: 10pt 0;
+}
+
+// ---- Selected person ----
+.selected-person-info {
+    position: fixed;
+
+    padding: 10pt 2%;
+    
+    width: 70%;
+    height: 70%;
+    
+    top: 50%;
+    left: 50%;
+    transform: translateX(-200%) translateY(-50%);
+
+    z-index: 10;
+
+    background-color: $secondary;
+    border-radius: 20pt;
+
+    transition: transform ease 1s;
+}
+
+.selected-person-info h2 {
+    font-weight: 300;
+    font-size: 24pt;
+
+    text-indent: 5%;
+}
+
+.exit-button {
+    position: absolute;
+    margin: 10pt 2%;
+    right: 0;
+    bottom: 0;
+}
+
+// ---- Select person type ----
+.select-person-type-container {
+    position: fixed;
+    
+    padding: 10pt 1%;
+
+    width: 20%;
+    height: 30%;
+
+    text-align: center;
+
+    top: 50%;
+    left: 0;
+
+    transform: translateX(-100%) translateY(-50%);
+
+    z-index: 10;
+
+    transition: transform ease 1s;
+}
+
+.select-new-person-button {
+    margin: 10pt 5%;
+    padding: 5%;
+}
+
+// ---- Add person ----
+.add-person-from-type-container {
+    position: fixed;
+
+    padding: 10pt 2%;
+    
+    width: 70%;
+    height: 70%;
+    
+    top: 50%;
+    left: 50%;
+    transform: translateX(-200%) translateY(-50%);
+
+    z-index: 10;
+
+    background-color: $secondary;
+    border-radius: 20pt;
+
+    transition: transform ease 1s;
+}
+
+.add-person-form > p {
+    padding: 5pt 1%;
+    font-size: 16pt;
+}
+
+.desc {
+    width: 50%;
+
+}
+
+// ---- Add child ----
+.add-child  {
+    position: fixed;
+
+    padding: 10pt 2%;
+    
+    width: 70%;
+    height: 70%;
+    
+    top: 50%;
+    left: 50%;
+    transform: translateX(-200%) translateY(-50%);
+
+    z-index: 10;
+
+    background-color: $secondary;
+    border-radius: 20pt;
+
+    transition: transform ease 1s;
+}
+
+// ---- Add spouse
+.add-spouse  {
+    position: fixed;
+
+    padding: 10pt 2%;
+    
+    width: 70%;
+    height: 70%;
+    
+    top: 50%;
+    left: 50%;
+    transform: translateX(-200%) translateY(-50%);
+
+    z-index: 10;
+
+    background-color: $secondary;
+    border-radius: 20pt;
+
+    transition: transform ease 1s;
+}
+
+// ---- Shown ----
+.shown {
+    transform: translateX(-50%) translateY(-50%);
+
+    transition: transform ease 1s;
+}
+
+.shown-0 {
+    transform: translateX(0) translateY(-50%);
+
+    transition: transform ease 1s;
+}
+
+// ---- relation lines ----
+.relation-line-container {
+    position: absolute;
+    width: 100%;
+    top: 0;
+    left: 0;
+}
+
+.relation-line {
+    position: absolute;
+    border: none;
+    background-color: $primary;
+    height: 2pt;
+    width: 120pt;
+
+    margin: 0;
+
+    z-index: -10;
+
+    transform: translateX(-50%);
+}

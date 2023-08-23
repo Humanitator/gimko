@@ -1,0 +1,87 @@
+/* light */
+$text-light: #3f7f32;
+$background-light: #ffffff;
+$primary-light: #77d21c;
+$secondary-light: #ecfdec;
+$accent-light: #7c7c0d;
+
+// Dark
+$text: #ffffff;
+$bg: #3f7f32;
+$primary: #77d21c;
+$secondary: #084908;
+$accent: #f2f22b;
+$primarycontrast: #ff8f8f;
+$secondarycontrast: #64d97b;
+$accentcontrast: #64d97b;
+$textcontrast: #ffdd00;
+$bgcontrast: #ffdd00;
+
+
+// ---- BG presets ----
+
+.text {
+    background-color: $text;
+}
+
+.primary {
+    background-color: $primary;
+}
+
+.secondary {
+    background-color: $secondary;
+}
+
+.accent {
+    background-color: $accent;
+}
+
+.red {
+    background-color: red;
+}
+
+// ---- Opacity presets ----
+
+.op-0 {
+    opacity: 0%;
+}
+
+.op-10 {
+    opacity: 10%;
+}
+
+.op-20 {
+    opacity: 20%;
+}
+
+.op-30 {
+    opacity: 30%;
+}
+
+.op-40 {
+    opacity: 40%;
+}
+
+.op-50 {
+    opacity: 50%;
+}
+
+.op-60 {
+    opacity: 60%;
+}
+
+.op-70 {
+    opacity: 70%;
+}
+
+.op-80 {
+    opacity: 80%;
+}
+
+.op-90 {
+    opacity: 90%;
+}
+
+.op-100 {
+    opacity: 100%;
+}
