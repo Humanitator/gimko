@@ -22,6 +22,7 @@
         name: "New Person",
         dob: '1920-01-02',
         dod: '1992-04-06',
+        isDeceased: false,
         description: "",
 
         id: -1,
@@ -39,6 +40,7 @@
         if (treeDoc.exists()) {
             console.log("Tree found!");
             tree.value = treeDoc.data();
+            
             // Set biggest PID
             biggestPID = 0;
             tree.value.people.forEach(person => {
@@ -46,6 +48,14 @@
                     biggestPID = person.id;
                 }
             });
+
+            console.log(tree.value.people);
+            
+            // Set dates
+            // tree.value.people.forEach(person => {
+            //     person.dob = new Date(person.dob);
+            //     person.dod = new Date(person.dod);
+            // });
 
             // Make tree
             refreshTree();
@@ -60,13 +70,21 @@
     const updateTree = async () => {
         if (tree.value) {
             const treeDoc = doc(db, "trees", tid);
-            await updateDoc(treeDoc, tree.value)
+            let formattedTree = structuredClone(tree.value);
+            // Format tree to json
+            formattedTree.people.forEach(person => {
+                // person.dob = person.dob.toJSON();
+                // person.dod = person.dod.toJSON();
+            });
+
+            // Update tree document
+            await updateDoc(treeDoc, formattedTree)
             .then(() => {
                 console.log("Tree update success!");
             })
             .catch(() => {
                 console.log("Tree update failed!");
-                alert("Tree update failed!")
+                alert("Tree save failed!")
             });
         }
     }
@@ -201,139 +219,6 @@
         closePersonInfo();
     };
 
-    // Add a person to tree
-    const newPerson = ref(structuredClone(personFormat));
-    const addPerson = (personObj) => {
-        if (personObj.name == "") {
-            personObj.name = "New person";
-        }
-        // Set date
-        personObj.dob = new Date(personObj.dob);
-        personObj.dod = new Date(personObj.dod);
-        
-        // Set new id
-        personObj.id = biggestPID + 1;
-        biggestPID++;
-
-        // Add person as child to all parents
-        getPerson(personObj.parents).forEach(parent => {
-            if (parent != null){
-                parent.children.push(personObj.id);
-            }
-        });
-
-        // Add person as spouse to spouses
-        getPerson(personObj.spouses).forEach(spouse => {
-            spouse.spouses.push(personObj.id);
-        });
-
-        // Add person to tree
-        tree.value.people.push(structuredClone(personObj));
-        console.log(tree.value.people); // Log tree
-
-        // Reset person variable
-        newPerson.value = structuredClone(personFormat);
-
-        // Refresh
-        refreshTree();
-    };
-
-    // Remove a perosn from the tree
-    const removePerson = (pid) => {
-        let person = getPerson(pid);
-
-        // Remove children
-        person.children.forEach(childID => {
-            const child = getPerson(childID);
-            child.parents.splice(child.parents.indexOf(person.id), 1);
-            if (child.parents.length == 0) {
-                // Add child to person's parents
-                if (person.parents[0] != null) {
-                    person.parents.forEach(parent => {
-                        getPerson(parent).children.push(child.id);
-                        child.parents.push(parent);
-                    });
-                } else {
-                    child.parents.push(person.parents[0]);
-                }
-            }
-        });
-
-        // Remove spuoses
-        person.spouses.forEach(spouseID => {
-            const spouse = getPerson(spouseID);
-            spouse.spouses.splice(spouse.spouses.indexOf(person.id), 1);
-        });
-
-        // Remove person from parents
-        person.parents.forEach(parentID => {
-            if (parentID != null) {
-                const parent = getPerson(parentID);
-                parent.children.splice(parent.children.indexOf(person.id), 1);
-            }
-        });
-
-        // Remove from tree
-        console.log(...tree.value.people);
-        tree.value.people.splice(tree.value.people.indexOf(person), 1);
-        console.log(...tree.value.people);
-        
-        // Refresh tree
-        refreshTree();
-
-        ftree.value.forEach(gen => {
-            console.log("Gen");
-            console.log(...gen);
-        });
-    }
-
-    // Select a person type to add
-    const adddingPerson = ref(false);
-    const selectNewPersonType = (pid) => {
-        currentPID = pid;
-        adddingPerson.value = true;
-    };
-
-    // Add person of selected type
-    const currentNewPersonType = ref("");
-    const addPersonFromType = (type) => {
-        currentNewPersonType.value = type;
-    };
-
-    // Add a child
-    const addChild = (pid) => {
-        // Check if PID exists
-        if (pid == null) {
-            pid = currentPID;
-        }
-
-        // Add the parent's spouses as parents
-        newPerson.value.parents = [pid];
-        getPerson(pid).spouses.forEach(spouseID => {
-            newPerson.value.parents.push(spouseID);
-        });
-        addPerson(newPerson.value);
-    };
-    
-    // Add a spouse
-    const addSpouse = (pid) => {
-        // Check if PID exists
-        if (pid == null) {
-            pid = currentPID;
-        }
-
-        // Add spuose's children as children
-        newPerson.value.children = [...getPerson(pid).children];
-
-        // Add the spuose spuoses as spuoses
-        newPerson.value.spouses = [pid];
-        getPerson(pid).spouses.forEach(spouseID => {
-            newPerson.value.spouses.push(spouseID);
-        });
-
-        addPerson(newPerson.value);
-    };
-
     // Sort generation by spuoses
     const sortGen = () => {
         if (ftree.value) {
@@ -388,6 +273,152 @@
         }
     };
 
+    // Add a person to tree
+    const newPerson = ref(structuredClone(personFormat));
+    const addPerson = (personObj) => {
+        if (personObj.name == "") {
+            personObj.name = "New person";
+        }
+        // Set date
+        // personObj.dob = new Date(personObj.dob);
+        // personObj.dod = new Date(personObj.dod);
+        
+        // Set new id
+        personObj.id = biggestPID + 1;
+        biggestPID++;
+
+        // Add person as child to all parents
+        getPerson(personObj.parents).forEach(parent => {
+            if (parent != null){
+                parent.children.push(personObj.id);
+            }
+        });
+
+        // Add person as spouse to spouses
+        getPerson(personObj.spouses).forEach(spouse => {
+            spouse.spouses.push(personObj.id);
+        });
+
+        // Add person to tree
+        tree.value.people.push(structuredClone(personObj));
+        // console.log(tree.value.people); // Log tree
+
+        // Reset person variable
+        newPerson.value = structuredClone(personFormat);
+
+        // Refresh
+        refreshTree();
+    };
+
+    // Remove a perosn from the tree
+    const removePID = ref();
+    const removePerson = (pid) => {
+        let person = getPerson(pid);
+
+        // Remove children
+        person.children.forEach(childID => {
+            const child = getPerson(childID);
+            child.parents.splice(child.parents.indexOf(person.id), 1);
+            if (child.parents.length == 0) {
+                // Add child to person's parents
+                if (person.parents[0] != null) {
+                    person.parents.forEach(parent => {
+                        getPerson(parent).children.push(child.id);
+                        child.parents.push(parent);
+                    });
+                } else {
+                    child.parents.push(person.parents[0]);
+                }
+            }
+        });
+
+        // Remove spuoses
+        person.spouses.forEach(spouseID => {
+            const spouse = getPerson(spouseID);
+            spouse.spouses.splice(spouse.spouses.indexOf(person.id), 1);
+        });
+
+        // Remove person from parents
+        person.parents.forEach(parentID => {
+            if (parentID != null) {
+                const parent = getPerson(parentID);
+                parent.children.splice(parent.children.indexOf(person.id), 1);
+            }
+        });
+
+        // Remove from tree
+        // console.log(...tree.value.people);
+        tree.value.people.splice(tree.value.people.indexOf(person), 1);
+        // console.log(...tree.value.people);
+        
+        // Refresh tree
+        refreshTree();
+
+        // ftree.value.forEach(gen => {
+        //     console.log("Gen");
+        //     console.log(...gen);
+        // });
+    }
+
+    // Confirm a edit
+    const confirmEdit = () => {
+        // Overwrite
+        tree.value.people[tree.value.people.indexOf(getPerson(editedPerson.value.id))] = editedPerson.value;
+        // console.log(tree.value.people);
+
+        console.log("Person edit success!");
+        // Refresh tree
+        closePersonInfo();
+        refreshTree();
+    };
+
+    // Select a person type to add
+    const adddingPerson = ref(false);
+    const selectNewPersonType = (pid) => {
+        currentPID = pid;
+        adddingPerson.value = true;
+    };
+
+    // Add person of selected type
+    const currentNewPersonType = ref("");
+    const addPersonFromType = (type) => {
+        currentNewPersonType.value = type;
+    };
+
+    // Add a child
+    const addChild = (pid) => {
+        // Check if PID exists
+        if (pid == null) {
+            pid = currentPID;
+        }
+
+        // Add the parent's spouses as parents
+        newPerson.value.parents = [pid];
+        getPerson(pid).spouses.forEach(spouseID => {
+            newPerson.value.parents.push(spouseID);
+        });
+        addPerson(newPerson.value);
+    };
+    
+    // Add a spouse
+    const addSpouse = (pid) => {
+        // Check if PID exists
+        if (pid == null) {
+            pid = currentPID;
+        }
+
+        // Add spuose's children as children
+        newPerson.value.children = [...getPerson(pid).children];
+
+        // Add the spuose spuoses as spuoses
+        newPerson.value.spouses = [pid];
+        getPerson(pid).spouses.forEach(spouseID => {
+            newPerson.value.spouses.push(spouseID);
+        });
+
+        addPerson(newPerson.value);
+    };
+
     // Show person info
     const selectedPerson = ref();
     const personIsSelected = ref(false);
@@ -397,12 +428,24 @@
         personIsSelected.value = true;
     };
 
+    // Edit person info
+    const editingPerson = ref(false);
+    const editedPerson = ref();
+    const editPerson = (id) => {
+        closePersonInfo();
+        editedPerson.value = structuredClone(tree.value.people.find(p => p.id == id));
+        editingPerson.value = true;
+    };
+
     // Close person info
     const closePersonInfo = () => {
         personIsSelected.value = false;
         adddingPerson.value = false;
+        editingPerson.value = false;
         currentNewPersonType.value = "";
         newPerson.value = structuredClone(personFormat);
+        editedPerson.value = null;
+        removePID.value = null;
         currentPID = null;
     };
 
@@ -469,7 +512,7 @@
     </div>
 
     <!-- Tree view -->
-    <div v-if="hasAccess && tree">
+    <div v-if="hasAccess && tree" style="position: relative;">
         <h1>{{ tree.name }}</h1>
 
          <!-- Add new person
@@ -499,15 +542,15 @@
                     <div class="person-actions">
                         <button class="hover-up-p" @click="showPersonInfo(person.id)">
                             <p>INFO</p>
-                            <div class="bg"></div>
+                            <div class="bg secondary op-50"></div>
                         </button>
                         <button class="hover-up-p" @click="selectNewPersonType(person.id)">
                             <p>ADD</p>
-                            <div class="bg"></div>
+                            <div class="bg secondary op-50"></div>
                         </button>
-                        <button class="hover-up-p" @click="removePerson(person.id)">
-                            <p>Remove</p>
-                            <div class="bg"></div>
+                        <button class="hover-up-p" @click="() => removePID = person.id">
+                            <p>REMOVE</p>
+                            <div class="bg red op-80"></div>
                         </button>
                     </div>
 
@@ -527,7 +570,7 @@
                     </div>
 
                     <!-- Draw relation lines -->
-                    <div v-if="(person.spouses.length == 0) || (j == Math.round(gen.find(p => p.spouses.includes(person.id)).spouses.length/2))">
+                    <div v-if="(person.spouses.length == 0) || (j == Math.round(gen.indexOf(gen.find(p => p.spouses.includes(person.id))) + gen.find(p => p.spouses.includes(person.id)).spouses.length/2))">
                         <hr v-for="child in person.children" class="relation-line" v-bind:style="{
                             left: 'calc(50% + ' + (
                                 -(getPersonPos(child).x - getPersonPos(person.id).x)/2
@@ -553,48 +596,50 @@
             </div>
         </div>
 
-        <!-- Draw relation lines -->
-        <div class="relation-line-container">
-            <div class="external-person-container" v-for="person in tree.people">
-                <!-- Draw lines to children -->
-                <!-- <hr v-for="child in person.children" class="relation-line" v-bind:style="{
-                    left: 'calc(50% + ' + (
-                        getPersonPos(person.id).x
-                        + (getPersonPos(child).x - getPersonPos(person.id).x)/2
-                    ) + 'pt)',
-                    top: 'calc(' + (
-                        (getPersonPos(person.id).y + (getPersonPos(child).y - getPersonPos(person.id).y)/2) +
-                        ((tPersonHeight/2) * -(1 - 1/(Math.abs(getPersonPos(child).x) + 1))) // Add vertical offset
-                    ) + 'pt)',
-                    transform: 'translateX(-50%) rotate(' + (
-                        Math.atan(
-                            (getPersonPos(child).y - getPersonPos(person.id).y) / 
-                            (getPersonPos(child).x - getPersonPos(person.id).x)
-                        )
-                    ) + 'rad)',
-                    width: Math.sqrt(
-                        ((getPersonPos(child).x - getPersonPos(person.id).x))**2 + 
-                        ((getPersonPos(child).y - getPersonPos(person.id).y))**2 
-                    ) + 'pt',
-                }" /> -->
-            </div>
-        </div>
-
         <!-- Person info -->
         <div class="selected-person-info" v-bind:class="(personIsSelected)?'shown':''">
-            <h2 v-if="selectedPerson">{{ selectedPerson.name }} ({{ selectedPerson.dob.getFullYear() }} - {{ selectedPerson.dod.getFullYear() }})</h2>
+            <h2 v-if="selectedPerson">{{ selectedPerson.name }} ({{ new Date(selectedPerson.dob).getFullYear() }} - {{ new Date(selectedPerson.dod).getFullYear() }})</h2>
             <article v-if="selectedPerson">
                 <p> {{ selectedPerson.description }} </p>
             </article>
 
+            <button class="edit-button hover-up-p" @click="editPerson(selectedPerson.id)">
+                <p>EDIT</p>
+                <div class="bg accent op-30"></div>
+            </button>
+
             <button class="exit-button hover-up-p" @click="closePersonInfo()">
-                <p>Close</p>
+                <p>CLOSE</p>
                 <div class="bg"></div>
             </button>
         </div>
 
+        <!-- Edit person info -->
+        <div class="edit-person-info-container" v-bind:class="(editingPerson)?'shown':''">
+            <h2>Edit person info</h2>
+            <!-- Add form -->
+            <div class="add-person-form" v-if="editedPerson">
+                <p>Name: <input v-model="editedPerson.name" type="text" /></p> <!-- Name -->
+                <p>Date of birth: <input v-model="editedPerson.dob" type="date" /></p> <!-- Date of birth -->
+                <p>Is deceased? <input type="checkbox" v-model="newPerson.isDeceased"></p> <!-- Is deceased -->
+                <p v-if="newPerson.isDeceased">Date of death: <input v-model="editedPerson.dod" type="date" /></p> <!-- Date of death -->
+                <p><label for="new-person-description">Description: </label></p> <!-- Description -->
+                <p><textarea class="desc" id="new-person-description" name="Description" v-model="editedPerson.description"></textarea></p>
+                <button class="hover-up-p" @click="confirmEdit()">
+                    <p>Confirm</p>
+                    <div class="bg"></div>
+                </button>
+            </div>
+
+            <!-- Exit -->
+            <button class="exit-button hover-up-p" @click="closePersonInfo()">
+                <p>Close</p>
+                <div class="bg accent"></div>
+            </button>
+        </div>
+
         <!-- Select person type -->
-        <div class="select-person-type-container" v-bind:class="(currentNewPersonType == '' && adddingPerson)?'shown-0':''">
+        <div class="select-person-type-container" v-bind:class="(currentNewPersonType == '' && adddingPerson)?'shown-0--50':''">
             <h2>Select person type</h2>
 
             <button class="select-new-person-button hover-up-p" @click="addPersonFromType('child')">
@@ -622,7 +667,8 @@
             <div class="add-person-form">
                 <p>Name: <input v-model="newPerson.name" type="text" /></p> <!-- Name -->
                 <p>Date of birth: <input v-model="newPerson.dob" type="date" /></p> <!-- Date of birth -->
-                <p>Date of death: <input v-model="newPerson.dod" type="date" /></p> <!-- Date of death -->
+                <p>Is deceased? <input type="checkbox" v-model="newPerson.isDeceased"></p> <!-- Is deceased -->
+                <p v-if="newPerson.isDeceased">Date of death: <input v-model="newPerson.dod" type="date" /></p> <!-- Date of death -->
                 <p><label for="new-person-description">Description: </label></p> <!-- Description -->
                 <p><textarea class="desc" id="new-person-description" name="Description" v-model="newPerson.description"></textarea></p>
                 <button class="hover-up-p" @click="(currentNewPersonType == 'child')?addChild():addSpouse()">
@@ -640,9 +686,27 @@
 
         <!-- UPDATE TREE -->
         <button class="exit-button hover-up-p" v-if="tree.people.length != 0" @click="updateTree()">
-            <p>Update Tree</p>
+            <p>Save Tree</p>
             <div class="bg accent"></div>
         </button>
+
+        <!-- Confirm person removal -->
+        <div class="confirm-person-remove" v-bind:class="(removePID)?'shown-0--50':''">
+            <h2>Are you sure?</h2>
+            <button class="hover-up-p" @click="closePersonInfo()">
+                <p>No</p>
+                <div class="bg secondary op-80 z--3"></div>
+            </button>
+            <button class="hover-up-p" @click="removePerson(removePID)">
+                <p>Yes</p>
+                <div class="bg red op-80 z--3"></div>
+            </button>
+            <button class="hover-up-p" @click="closePersonInfo()">
+                <p>No</p>
+                <div class="bg secondary op-80 z--3"></div>
+            </button>
+            <div class="bg op-30 z--5"></div>
+        </div>
        
         <!--  IF NO PERON EXISTS -->
         <!-- Add new person form -->
@@ -660,6 +724,8 @@
     </div>
 </template>
 
-<style lang="scss">
+<style scoped lang="scss">
     @import "../assets/css/tree.scss";
+    @import "../assets/css/base.scss";
+    @import "../assets/css/colors.scss";
 </style>

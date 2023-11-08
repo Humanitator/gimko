@@ -60,6 +60,18 @@ input {
     border-radius: 5pt;
 }
 
+::placeholder {
+    color: $text;
+}
+
+:-ms-input-placeholder {
+    color: $text;
+}
+
+::-ms-input-placeholder {
+    color: $text;
+}
+
 textarea {
     background-color: $bg;
     color: $text;
@@ -134,6 +146,60 @@ nav > *:hover {
     letter-spacing: 5pt;
     background-color: $primary;
     transition: all 0.5s;
+}
+
+// ---- scroll bar -----
+
+// Width
+::-webkit-scrollbar {
+    width: 10pt;
+    opacity: 10%;
+}
+
+// Track
+::-webkit-scrollbar-track {
+    border-radius: 10pt;
+}
+
+// Handle
+::-webkit-scrollbar-thumb {
+    background-color: rgba($color: $secondary, $alpha: 0.3);
+    border-radius: 10pt;
+    transition: background-color  1s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: rgba($color: $secondary, $alpha: 0.4);
+    transition: background-color 0.5s;
+}
+
+// ---- Selection ----
+::selection {
+    background-color: $accent;
+}
+
+// ---- Shown ----
+.shown {
+    transform: translateX(-50%) translateY(-50%);
+
+    transition: transform ease 1s;
+}
+
+.shown-0--50 {
+    transform: translateX(0) translateY(-50%);
+
+    transition: transform ease 1s;
+}
+
+.shown-0-50 {
+    transform: translateX(0) translateY(50%);
+
+    transition: transform ease 1s;
+}
+
+.shown-0-0 {
+    transform: translateX(0) translateY(0);
+    transition: transform ease 1s;
 }
 
 // ---- animations ----

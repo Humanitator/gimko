@@ -4,10 +4,10 @@
   import { useRouter } from 'vue-router';
   import { onMounted } from 'vue';
 
-  const isLoggedIn = ref(false); // Get refrence to router
-  const router = useRouter();
+  const isLoggedIn = ref(false);
+  const router = useRouter(); // Get refrence to router
   
-  const gotAuth = ref(true);
+  const gotAuth = ref(false);
   let auth;
   onMounted(() => {
     auth = getAuth();
@@ -18,6 +18,7 @@
         isLoggedIn.value = false;
       }
       console.log(isLoggedIn.value);
+      gotAuth.value = true;
     });
   });
   
@@ -34,10 +35,11 @@
   <nav>
     <router-link to="/" style="flex-basis: 2;">Home</router-link>
     <router-link to="/about">About</router-link>
-    <router-link to="/tree">Tree</router-link>
-    <router-link v-if="!isLoggedIn" to="/sign-in">Sign in</router-link>
-    <router-link v-if="!isLoggedIn" to="/register">Register</router-link>
-    <button v-if="isLoggedIn" @click="handleSignOut">Sign Out</button>
+    <router-link to="/people">People</router-link>
+    <router-link v-if="gotAuth && isLoggedIn" to="/tree">Tree</router-link>
+    <router-link v-if="gotAuth && !isLoggedIn" to="/sign-in">Sign in</router-link>
+    <router-link v-if="gotAuth && !isLoggedIn" to="/register">Register</router-link>
+    <button v-if="gotAuth && isLoggedIn" @click="handleSignOut">Sign Out</button>
   </nav>
   <div class="page-content">
     <router-view/>

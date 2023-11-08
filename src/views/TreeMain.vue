@@ -89,18 +89,35 @@
 </script>
 
 <template>
+    <h1>Trees</h1>
+
+    <!-- Render placeholders while retrieving data from firebase -->
     <div v-if="treeDocs.length != treeCount">
-        <h1>Getting tees</h1>
+        <div class="tree-list-container">
+            <div class="tree-selector">
+                <div class="tree-button hover-up" v-for="i in Array(5).keys()">
+                    <div class="bg op-20"></div>
+                </div>
+            </div>
+            <div class="bg"></div>
+        </div>
+
+        <div class="new-tree-container">
+            <div class="bg"></div>
+        </div>
     </div>
+
     <!-- If tree docs -->
     <div v-if="treeDocs.length == treeCount">
-        <h1>Trees</h1>
     
         <div class="tree-list-container">
-            <button class="tree-button hover-up-p" v-for="treeDoc in treeDocs" @click="loadTree(treeDoc.id)">
-                <p>{{ treeDoc.data().name }}</p>
-                <div class="bg accent"></div>
-            </button>
+            <div class="tree-selector">
+                <button class="tree-button hover-up-p" @click="loadTree(treeDoc.id)" v-for="treeDoc in treeDocs">
+                    <p>{{ treeDoc.data().name }}</p>
+                    <div class="bg op-20"></div>
+                </button>
+            </div>
+            <div class="bg"></div>
         </div>
     
         <div class="new-tree-container">
@@ -117,6 +134,6 @@
     </div>
 </template>
 
-<style lang="scss">
+<style scoped lang="scss">
     @import "../assets/css/treeMain.scss";
 </style>

@@ -14,7 +14,13 @@ const routes = [
   { path: "/register", component: () => import("../views/Register.vue")},
   { path: "/sign-in", component: () => import("../views/SignIn.vue")},
   {
-    path: '/tree/:id', name: 'tree', component: import("../components/TreeView.vue"),
+    path: "/people", component: () => import("../views/People.vue"),
+    meta: {
+      requiresAuth: true,
+    }
+  },
+  {
+    path: '/tree/:id', name: 'tree', component: () => import("../components/TreeView.vue"),
     meta: {
       requiresAuth: true,
     }
@@ -44,7 +50,7 @@ router.beforeEach( async (to, from, next) => {
     if (await getCurrentUser()) {
       next();
     } else {
-      alert("you dont have access!");
+      alert("You have to be signed in to access this page!");
       next("/");
     }
   } else {

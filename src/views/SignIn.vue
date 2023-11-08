@@ -1,5 +1,5 @@
 <script setup>
-    import { ref } from 'vue';
+    import { ref, onMounted } from 'vue';
     import {
         getAuth,
         signInWithEmailAndPassword,
@@ -7,6 +7,7 @@
         signInWithPopup,
     } from "firebase/auth";
     import { useRouter } from 'vue-router';
+import { doc } from 'firebase/firestore';
 
     const email = ref("");
     const password = ref("");
@@ -46,8 +47,17 @@
     const signInWithGoogle = () => {
         const provider = new GoogleAuthProvider();
         signInWithPopup(getAuth(), provider)
-        .then((result) => {
+        .then( async (result) => {
             console.log(result.user);
+            // Check if user exists
+            const uDoc = await getDoc(doc(db, 'users', result.user.uid))
+            if (!uDoc.exists()) { // Make user if doesn't exist
+                await setDoc(doc(db, 'users', result.user.uid), {
+                    username: username.value,
+                    friends: [],
+                    trees: [],
+                });
+            };
             router.push("/");
         })
         .catch((error) => {
@@ -66,12 +76,26 @@
         <p><input type="text" placeholder="Email" v-model="email"/></p>
         <p><input type="password" placeholder="Password" v-model="password"/></p>
         <p v-if="errorMsg">{{ errorMsg }}</p>
-        <p><button @click="register">Submit</button></p>
+        <p>
+            <button class="hover-up-p"  @click="register">
+                <p>Submit</p>
+                <div class="bg"></div>
+            </button>
+        </p>
     
-        <p><button @click="signInWithGoogle">Sign in with Google</button></p>
+        <p>
+            <button class="hover-up-p" @click="signInWithGoogle">
+                <p> Sign in with Google</p>
+                <div class="bg accent"></div>
+            </button>
+        </p>
+        
+        <div class="bg"></div>
     </article>
 </template>
 
 <style lang="scss">
     @import '../assets/css/signIn.scss';
+    @import '../assets/css/base.scss';
+    @import '../assets/css/colors.scss';
 </style>

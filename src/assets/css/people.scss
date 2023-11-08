@@ -1,0 +1,250 @@
+/* light */
+$text-light: #3f7f32;
+$background-light: #ffffff;
+$primary-light: #77d21c;
+$secondary-light: #ecfdec;
+$accent-light: #7c7c0d;
+
+// Dark
+$text: #ffffff;
+$bg: #3f7f32;
+$primary: #77d21c;
+$secondary: #084908;
+$accent: #f2f22b;
+$primarycontrast: #ff8f8f;
+$secondarycontrast: #64d97b;
+$accentcontrast: #64d97b;
+$textcontrast: #ffdd00;
+$bgcontrast: #ffdd00;
+
+// ----- Friends ------
+.friend-list-container {
+    position: relative;
+    margin: 0 1%;
+    text-align: center;
+
+}
+
+.friend-list-container > h2 {
+    margin: 10pt 0;
+    font-weight: 400;
+    font-size: 26pt;
+}
+
+.friend-container {
+    margin: 0 1%;
+    position: relative;
+    padding: 10pt;
+    
+    width: 10%;
+
+    text-align: center;
+    font-family: "Nunito", sans-serif;
+    font-size: 18pt;
+    font-weight: 300;
+    
+    background-color: transparent;
+}
+
+.friend-selector {
+    display: flex;
+    position: relative;
+
+    overflow-x: scroll;
+    overflow-y: visible;
+    padding: 20pt 0;
+    padding-top: 10pt;
+}
+
+.friend-button {
+    position: relative;
+    border-radius: 5pt;
+
+    margin: 0 10pt;
+
+    min-width: 16%;
+    height: 250pt;
+}
+
+.friend-button > .bg {
+    transition: opacity 1s;
+}
+
+.friend-button:hover > .bg {
+    opacity: 30%;
+    transition: opacity 1s;
+}
+
+.lonely {
+    position: static;
+    width: 30%;
+    opacity: 20%;
+    border-radius: 10pt;
+
+    z-index: -1;
+}
+
+// ---- Username query -----
+.username-query-container {
+    position: relative;
+    margin: 0 auto;
+    padding: 10pt 2%;
+
+    text-align: center;
+
+    width: 90%;
+    max-width: 500pt;
+    min-height: 150pt;
+}
+
+.username-query-container > p {
+    margin: 10pt 0;
+}
+
+.username-query-container > h2 {
+    font-weight: 400;
+    font-size: 20pt;
+    margin: 10pt 0;
+}
+
+.username-query-container > button {
+    margin: 10pt 0;
+    padding: 10pt 8%;
+}
+
+// ---- Search results -----
+.search-result-container {
+    position: relative;
+    margin: 10pt 2%;
+
+    min-height: 150pt;
+}
+
+.search-result {
+    position: relative;
+    
+    padding: 10pt 1%;
+
+    border-radius: 10pt;
+
+    text-align: center;
+
+    z-index: 5;
+    
+    width: 200pt;
+    height: 100pt;
+
+    transition: all 0.5s;
+}
+
+.search-result > * {
+    margin: 0;
+    transition: all 0.5s;
+}
+
+.search-result > h2 {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translateX(-50%) translateY(-60%);
+
+    transition: all 0.5s;
+}
+
+.search-result:hover > h2 {
+    transform: translateX(-50%) translateY(-200%);
+
+    transition: all 0.5s;
+}
+
+.search-result > .bg {
+    transition: all 0.5s;
+}
+
+.search-result:hover > .bg {
+    height: 50%;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+
+    transition: all 0.5s;
+}
+
+.search-result-buttons {
+    position: absolute;
+    
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 50%;
+    
+    z-index: -1;
+
+    transition: all 0.5s;
+}
+
+.search-result-buttons > .bg {
+    border-radius: 10pt;
+}
+
+.search-result-buttons > button {
+    margin: 0 3%;
+    margin-top: 10pt;
+
+    z-index: 30;
+}
+
+.search-result:hover > .search-result-buttons {
+    transform: translateY(100%);
+
+    transition: all 0.5s;
+}
+
+.search-result:hover > .search-result-buttons > .bg {
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+}
+
+// ----- Buttons -----
+.close-button {
+    position: absolute;
+    bottom: 5pt;
+    right: 4%;
+}
+
+// ----- Accept requests ------
+.requests-button {
+    position: fixed;
+    bottom: 10pt;
+    right: 1%;
+
+    z-index: 5;
+
+    transform: translateY(calc(10pt + 100%));
+}
+
+.requests-container {
+    position: fixed;
+    
+    padding: 5pt 2%;
+
+    right: 0;
+    bottom: 0;
+
+    min-height: 200pt;
+
+    transform: translateY(100%);
+
+    z-index: 7;
+
+    transition: transform 1s;
+}
+
+.requests-container > .bg {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+}
+
+
+// ----- Add to tree --------

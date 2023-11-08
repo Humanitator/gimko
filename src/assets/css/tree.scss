@@ -89,7 +89,7 @@ article p {
     z-index: 1;
 }
 
-.person h2 {
+.person > h2 {
     text-align: center;
     font-size: 20pt;
     font-weight: 400;
@@ -97,7 +97,7 @@ article p {
     transition: all ease 0.5s;
 }
 
-.person .bg {
+.person > .bg {
     opacity: 100%;
     background-color: $secondary;
 
@@ -121,7 +121,7 @@ article p {
 
     background-color: $primary;
 
-    transition: all ease 0.3s;
+    transition: all ease 0.5s;
 }
 
 .person-actions > button {
@@ -133,16 +133,12 @@ article p {
     z-index: 5;
 }
 
-.person-actions > button > .bg {
-    opacity: 20%;
-}
-
 .person:hover > .person-actions {
     transform: translateY(100%);
     border-top-right-radius: 0;
     border-top-left-radius: 0;
 
-    transition: all ease 0.3s;
+    transition: all ease 0.5s;
 }
 
 .person:hover > .bg {
@@ -156,7 +152,7 @@ article p {
 .person:hover > h2 {
     transform: translateY(-100%);
 
-    transition: all ease 0.5s;
+    transition: all ease 0.3s;
 }
 
 .person-actions > * {
@@ -196,6 +192,35 @@ article p {
     margin: 10pt 2%;
     right: 0;
     bottom: 0;
+}
+
+.edit-button {
+    position: absolute;
+    margin: 10pt 2%;
+    right: 100pt;
+    bottom: 0;
+}
+
+.confirm-person-remove {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    padding: 10pt 2%;
+
+    text-align: center;
+
+    width: 200pt;
+
+    border-radius: 10pt;
+    z-index: 30;
+    
+    transform: translateX(100%) translateY(50%);
+    transition: transform ease 0.5s;
+}
+
+.confirm-person-remove > button {
+    width: 100%;
+    margin: 10pt 2%;
 }
 
 // ---- Select person type ----
@@ -252,7 +277,6 @@ article p {
 
 .desc {
     width: 50%;
-
 }
 
 // ---- Add child ----
@@ -297,15 +321,25 @@ article p {
     transition: transform ease 1s;
 }
 
-// ---- Shown ----
-.shown {
-    transform: translateX(-50%) translateY(-50%);
 
-    transition: transform ease 1s;
-}
 
-.shown-0 {
-    transform: translateX(0) translateY(-50%);
+// ----- Edit prson info -------
+.edit-person-info-container {
+    position: fixed;
+
+    padding: 10pt 2%;
+    
+    width: 70%;
+    height: 70%;
+    
+    top: 50%;
+    left: 50%;
+    transform: translateX(-200%) translateY(-50%);
+
+    z-index: 10;
+
+    background-color: $secondary;
+    border-radius: 20pt;
 
     transition: transform ease 1s;
 }

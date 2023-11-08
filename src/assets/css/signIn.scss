@@ -11,14 +11,15 @@ $textcontrast: #ffdd00;
 $bgcontrast: #ffdd00;
 
 article {
+    position: relative;
     margin: auto;
     width: 30%;
     padding: 2%;
     border-radius: 20pt;
-    background-color: $secondary;
 }
 
 article > * {
+    padding: 5pt;
     text-align: center;
 }
 

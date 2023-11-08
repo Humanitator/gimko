@@ -20,6 +20,7 @@ $accent-light: #7c7c0d;
     text-align: center;
 
     max-width: 400pt;
+    min-height: 200pt;
 }
 
 .new-tree-container > * {
@@ -44,8 +45,8 @@ $accent-light: #7c7c0d;
 
 // ----- Tree List ------
 .tree-list-container {
-    display: flex;
     position: relative;
+    margin: 0 1%;
 }
 
 .tree-container {
@@ -63,14 +64,23 @@ $accent-light: #7c7c0d;
     background-color: transparent;
 }
 
+.tree-selector {
+    display: flex;
+    position: relative;
+
+    min-height: 50pt;
+
+    overflow-x: scroll;
+    padding: 20pt 0;
+}
+
 .tree-button {
     position: relative;
     border-radius: 5pt;
 
-    margin: 0 1%;
+    margin: 0 10pt;
 
-    width: 100%;
-    max-width: 200pt;
+    min-width: 16%;
     height: 50pt;
 }
 
@@ -83,8 +93,8 @@ $accent-light: #7c7c0d;
     transition: opacity 1s;
 }
 
-
-
 h2 {
     font-weight: 300;
 }
+
+// ---- Placeholders -----
