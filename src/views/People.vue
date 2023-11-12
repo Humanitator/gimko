@@ -1,16 +1,18 @@
 <script setup>
     import db from '@/firebase/init';
-import { async } from '@firebase/util';
+    import { async } from '@firebase/util';
+    import { safeUpdateDoc } from '@/firebase/fbEasy'
     import { getAuth } from 'firebase/auth';
     import { collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
     import { onMounted, ref } from 'vue';
 
     // Get current user
     const user = ref();
+    const auth = ref();
     const getUser = async () => {
         console.log("Getting user!");
-        const auth = getAuth();
-        const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
+        auth.value = getAuth();
+        const userDoc = await getDoc(doc(db, "users", auth.value.currentUser.uid));
         if (userDoc.exists()) {
             console.log("Got user!");
             user.value = userDoc.data();
@@ -50,53 +52,106 @@ import { async } from '@firebase/util';
 
     const selectedPerson = ref();
 
+    // Get friend requests
+    const incomingFriendReq = ref([]);
+    const sentFriendReq = ref([]);
+    const getFriendRequests = () => {
+        // Get incoming
+        user.value.incomingFriendReq.forEach( async (reqID) => {
+            const person = await getPersonDoc(reqID);
+            incomingFriendReq.value.push(person.data());
+        });
+        // Get sent
+        user.value.sentFriendReq.forEach( async (reqID) => {
+            const person = await getPersonDoc(reqID);
+            sentFriendReq.value.push(person.data());
+        });
+    }
+
     // Send a friend request
     const sendFriendRequest = async (pid) => {
-        const auth = getAuth();
         let person = (await getPersonDoc(pid)).data();
         await updateDoc(doc(db, "users", pid), {
-            friendRequests: [...person.friendRequests, auth.currentUser.uid],
+            incomingFriendReq: [...person.sentFriendReq, auth.value.currentUser.uid],
         });
 
         // Update local user ref
-        user.value.pendingRequests.push(pid);
+        user.value.sentFriendReq.push(pid);
 
         // Update DB user
-        await updateDoc(doc(db, "users", auth.currentUser.uid), {
-            pendingRequests: [...user.value.pendingRequests],
+        await updateDoc(doc(db, "users", auth.value.currentUser.uid), {
+            sentFriendReq: [...user.value.sentFriendReq],
         });
+
+        // Add to local ref
+        sentFriendReq.value.push(person);
 
         console.log("Sent friend request");
     };
 
     // Accept friend request
     const acceptFriendRequest = async (pid) => {
-        const auth = getAuth();
-        const person = getPersonDoc(pid).data();
+        const person = (await getPersonDoc(pid)).data();
 
-        // Remove from requests
-        const userFRQ = [...user.value.friendRequests];
-        userFRQ.splice(userFRQ.indexOf(pid), 1);
+        // Remove from local ref
+        incomingFriendReq.value.splice(user.value.incomingFriendReq.indexOf(pid), 1);
+
+        // Remove from local user requests
+        user.value.incomingFriendReq.splice(user.value.incomingFriendReq.indexOf(pid), 1);
         
-        // Update local user ref
-        user.value.friendRequests = [...userFRQ];
+        // Update local user friends
         user.value.friends.push(pid);
 
         // Update DB user
-        await updateDoc(doc(db, "users", auth.currentUser.uid), {
-            friendRequests: [...userFRQ],
+        await updateDoc(doc(db, "users", auth.value.currentUser.uid), {
+            incomingFriendReq: [...user.value.incomingFriendReq],
             friends: [...user.value.friends],
         });
 
-        // Remove from pending
-        const perosnPRQ = [...person.pendingRequests];
-        perosnPRQ.splice(perosnPRQ.indexOf(auth.currentUser.uid), 1);
+        // Remove from local person
+        person.sentFriendReq.splice(person.sentFriendReq.splice(auth.value.currentUser.uid), 1);
 
         await updateDoc(doc(db, "users", pid), {
-            pendingRequests: [],
-            friends: [...person.friends, auth.currentUser.uid],
+            sentFriendReq: [...person.sentFriendReq],
+            friends: [...person.friends, auth.value.currentUser.uid],
         });
-    }
+    };
+
+    // Deny friend request
+    const denyFriendRequest = async (pid) => {
+        const person = (await getPersonDoc(pid)).data();
+
+        // Remove from local ref
+        incomingFriendReq.value.splice(user.value.incomingFriendReq.indexOf(pid), 1);
+
+        // Remove on local
+        person.sentFriendReq.splice(person.sentFriendReq.indexOf(auth.value.currentUser.uid));
+        user.value.incomingFriendReq.splice(person.incomingFriendReq.indexOf(pid));
+
+        // Remove from person
+        safeUpdateDoc('/users', pid, { sentFriendReq: [ ...person.sentFriendReq] });
+
+        // Remove from user
+        safeUpdateDoc('/users', auth.value.currentUser.uid, { incomingFriendReq: [ ...user.value.incomingFriendReq] });
+    };
+
+    // Cancel a sent friend request
+    const cancelFriendRequest = async (pid) => {
+        const person = (await getPersonDoc(pid)).data();
+
+        // Remove from local ref
+        sentFriendReq.value.splice(user.value.sentFriendReq.indexOf(pid), 1);
+
+        // Remove on local
+        person.incomingFriendReq.splice(person.incomingFriendReq.indexOf(auth.value.currentUser.uid), 1);
+        user.value.sentFriendReq.splice(user.value.sentFriendReq.splice(pid), 1);
+
+        // Remove from person
+        safeUpdateDoc('/users', pid, { incomingFriendReq: [...person.incomingFriendReq] });
+        
+        // Remove from user
+        safeUpdateDoc('/users', auth.value.currentUser.uid, { sentFriendReq: [...user.value.sentFriendReq] });
+    };
 
     // Add a person to tree
     const addingToTree = ref(false);
@@ -118,9 +173,11 @@ import { async } from '@firebase/util';
     };
 
     // When mounted
-    onMounted(() => {
+    onMounted(async () => {
         document.title = "gimko | People"
-        getUser();
+        await getUser();
+        getFriendRequests();
+        console.log(user.value);
     });
 </script>
 
@@ -145,6 +202,7 @@ import { async } from '@firebase/util';
 
     <!-- Page view -->
     <div v-if="user">
+        <h2>Hello, {{ user.username }}!</h2>
         <!-- Search query results -->
         <div class="search-result-container" v-if="queryResults">
             <h2>Search results:</h2>
@@ -152,11 +210,15 @@ import { async } from '@firebase/util';
                 <h2>{{ person.data().username }}</h2>
 
                 <div class="search-result-buttons">
-                    <!-- Add friend -->
+                    <!-- If self -->
+                    <h2 v-if="person.id == auth.currentUser.uid">
+                        This is You!
+                    </h2>
+                    <!-- Add friend / Send friend request -->
                     <button 
                         class="hover-up-p" 
                         @click="sendFriendRequest(person.id)" 
-                        v-if="!user.friends.includes(person.id) && !user.pendingRequests.includes(person.id)"
+                        v-if="!user.friends.includes(person.id) && !user.incomingFriendReq.includes(person.id) && !user.sentFriendReq.includes(person.id) && auth.currentUser.uid != person.id"
                     >
                         <p>ADD FRIEND</p>
                         <div class="bg op-30"></div>
@@ -165,7 +227,7 @@ import { async } from '@firebase/util';
                     <button 
                         class="hover-up-p" 
                         @click="acceptFriendRequest(person.id)" 
-                        v-if="user.friendRequests.includes(person.id)"
+                        v-if="user.incomingFriendReq.includes(person.id)"
                     >
                         <p>ACCEPT FRIEND REQUEST</p>
                         <div class="bg op-30"></div>
@@ -214,27 +276,35 @@ import { async } from '@firebase/util';
         <div class="requests-container" v-bind:class="(requestDialogOpen)?'shown-0-0':''">
             <div class="friend-requests">
                 <h2>Incoming requests:</h2>
-                <div v-for="request in user.friendRequests">
+                <div v-for="personID, i in user.incomingFriendReq" v-if="incomingFriendReq.length > 0">
                     <div class="request">
-                        <p></p>
-                        <button class="hover-up-p">
-                            <p>X</p>
-                            <div class="bg"></div>
-                        </button>
-                        <button class="hover-up-p">
-                            <p>Y<img src="" alt=""></p>
-                            <div class="bg"></div>
-                        </button>
+                        <p>{{ incomingFriendReq[i].username }}
+                            <button class="hover-up-p" @click="denyFriendRequest(personID)">
+                                <p>X</p>
+                                <div class="bg"></div>
+                            </button>
+                            <button class="hover-up-p" @click="acceptFriendRequest(personID)">
+                                <p>Y</p>
+                                <div class="bg"></div>
+                            </button>
+                        </p>
                     </div>
                 </div>
-                <p v-if="!user.friendRequests || user.friendRequests.length == 0">No incoming requests...</p>
+                <p v-if="!user.incomingFriendReq || user.incomingFriendReq.length == 0">No incoming requests...</p>
             </div>
             <div class="pending-requests">
                 <h2>Sent requests:</h2>
-                <div v-for="request in user.pendingRequests">
-                    {{ request }}
+                <div v-for="personID, i in user.sentFriendReq" v-if="sentFriendReq.length > 0">
+                    <div class="request">
+                        <p>{{ sentFriendReq[i].username }}
+                            <button class="hover-up-p" @click="cancelFriendRequest(personID)">
+                                <p>Cancel</p>
+                                <div class="bg"></div>
+                            </button>
+                        </p>
+                    </div>
                 </div>
-                <p v-if="!user.pendingRequests || user.pendingRequests.length == 0"> No sent requests...</p>
+                <p v-if="!user.sentFriendReq || user.sentFriendReq.length == 0"> No sent requests...</p>
             </div>
 
             <button class="close-button z-10 hover-up-p" @click="closeDialogs()">

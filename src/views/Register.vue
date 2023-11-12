@@ -66,8 +66,8 @@ import { async } from '@firebase/util';
                 await setDoc(doc(db, 'users', data.user.uid), {
                     username: username.value,
                     friends: [],
-                    friendRequests: [],
-                    pendingRequests: [],
+                    sentFriendReq: [],
+                    incomingFriendReq: [],
                     trees: [],
                 });
 
@@ -125,8 +125,8 @@ import { async } from '@firebase/util';
                 await setDoc(doc(db, 'users', result.user.uid), {
                     username: username.value,
                     friends: [],
-                    friendRequests: [],
-                    pendingRequests: [],
+                    sentFriendReq: [],
+                    incomingFriendReq: [],
                     trees: [],
                 });
             };

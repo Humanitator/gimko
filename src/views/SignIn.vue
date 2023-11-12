@@ -7,7 +7,7 @@
         signInWithPopup,
     } from "firebase/auth";
     import { useRouter } from 'vue-router';
-import { doc } from 'firebase/firestore';
+    import { doc } from 'firebase/firestore';
 
     const email = ref("");
     const password = ref("");
@@ -18,7 +18,7 @@ import { doc } from 'firebase/firestore';
 
     const register = () => {
         // Need .value because ref()
-        const auth = getAuth();
+        const auth = getAuth ();
         signInWithEmailAndPassword(auth, email.value, password.value)
         .then((data) => {
             console.log("Successfully signed!");
@@ -54,6 +54,8 @@ import { doc } from 'firebase/firestore';
             if (!uDoc.exists()) { // Make user if doesn't exist
                 await setDoc(doc(db, 'users', result.user.uid), {
                     username: username.value,
+                    sentFriendReq: [],
+                    incomingFriendReq: [],
                     friends: [],
                     trees: [],
                 });
