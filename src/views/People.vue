@@ -1,7 +1,7 @@
 <script setup>
     import db from '@/firebase/init';
     import { async } from '@firebase/util';
-    import { safeUpdateDoc } from '@/firebase/fbEasy'
+    import { safeUpdateDoc, safeGetDoc } from '@/firebase/fbEasy'
     import { getAuth } from 'firebase/auth';
     import { collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
     import { onMounted, ref } from 'vue';
@@ -96,6 +96,9 @@
         // Remove from local ref
         incomingFriendReq.value.splice(user.value.incomingFriendReq.indexOf(pid), 1);
 
+        // Add to local friends
+        friends.value.push(person);
+
         // Remove from local user requests
         user.value.incomingFriendReq.splice(user.value.incomingFriendReq.indexOf(pid), 1);
         
@@ -144,7 +147,7 @@
 
         // Remove on local
         person.incomingFriendReq.splice(person.incomingFriendReq.indexOf(auth.value.currentUser.uid), 1);
-        user.value.sentFriendReq.splice(user.value.sentFriendReq.splice(pid), 1);
+        user.value.sentFriendReq.splice(user.value.sentFriendReq.indexOf(pid), 1);
 
         // Remove from person
         safeUpdateDoc('/users', pid, { incomingFriendReq: [...person.incomingFriendReq] });
@@ -152,6 +155,30 @@
         // Remove from user
         safeUpdateDoc('/users', auth.value.currentUser.uid, { sentFriendReq: [...user.value.sentFriendReq] });
     };
+
+    // Get friends
+    const friends = ref([]);
+    const getFriends = () => {
+        user.value.friends.forEach(async (fid) => {
+            const friend = await safeGetDoc('/users', fid);
+            friends.value.push(friend.data());
+        });
+    }
+
+    // Remove a friend
+    const removeFriend = async (pid) => {
+        const person = (await safeGetDoc('/users', pid)).data()
+
+        // Remove on local
+        person.friends.splice(person.friends.indexOf(auth.value.currentUser.uid), 1);
+        user.value.friends.splice(user.value.friends.indexOf(pid), 1);
+        
+        // Remove in person
+        safeUpdateDoc('/users', pid, { friends: [...person.friends]})
+
+        // Remove in user
+        safeUpdateDoc('/users', auth.value.currentUser.uid, { friends: [...user.value.friends] });
+    }
 
     // Add a person to tree
     const addingToTree = ref(false);
@@ -177,6 +204,7 @@
         document.title = "gimko | People"
         await getUser();
         getFriendRequests();
+        getFriends();
         console.log(user.value);
     });
 </script>
@@ -318,11 +346,19 @@
         <!-- Friends list -->
         <div class="friend-list-container">
             <h2>Friends</h2>
-            <div class="friend-selector">
-                <button class="friend-button hover-up-p" @click="loadPerson(friend)" v-for="friend in user.friends">
-                    <p>{{ treeDoc.data().name }}</p>
+            <div class="friend-selector" v-if="friends.length > 0">
+                <div class="friend-panel" v-for="friendID, i in user.friends">
+                    <h2>{{ friends[i].username }}</h2>
+                    <button class="hover-up-p" @click="loadPerson(friendID)">
+                        <p>Info</p>
+                        <div class="bg"></div>
+                    </button>
+                    <button class="hover-up-p" @click="removeFriend(friendID)">
+                        <p>Remove Friend</p>
+                        <div class="bg"></div>
+                    </button>
                     <div class="bg op-20"></div>
-                </button>
+                </div>
             </div>
 
             <!-- If friends is empty -->
