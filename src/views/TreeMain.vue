@@ -2,6 +2,7 @@
     import { onMounted, ref } from 'vue';
     import { getAuth } from 'firebase/auth';
     import db from "../firebase/init.js";
+    import { defaultTree } from "../firebase/defaultStructs"
     import { doc, addDoc, setDoc, getDoc, getDocs, query, collection, updateDoc, where } from "firebase/firestore";
     import { useRouter } from 'vue-router';
 
@@ -38,8 +39,10 @@
     };
 
     // Create a new tree
+    const creatingTree = ref(false);
     const newTreeName = ref("New tree");
     const createTree = async () => {
+        creatingTree.value = true;
         if (newTreeName.value === "") {
             newTreeName.value = "New tree";
         }
@@ -54,10 +57,9 @@
         }
 
         // Make new tree
-        const treeObj = {
-            name: newTreeName.value,
-            people: [],
-        };
+        const treeObj = defaultTree.structuredClone();
+        treeObj.name = newTreeName.value;
+        treeObj.ownerID = auth.currentUser.uid;
 
         const treeRef = await addDoc(treeColRef, treeObj);
 
@@ -125,7 +127,7 @@
             <p>Name:</p>
             <p><input type="text" v-model="newTreeName" placeholder="New tree"></p>
     
-            <button class="hover-up-p" @click="createTree">
+            <button v-if="!creatingTree" class="hover-up-p" @click="createTree">
                 <p>Create tree</p>
             </button>
 

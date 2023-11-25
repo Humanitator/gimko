@@ -19,7 +19,14 @@
         } else {
             console.log("User not found!");
         }
-    }
+    };
+
+    const userTrees = ref([]);
+    const getUserTrees = async () => {
+        await user.value.trees.forEach( async (treeID) => {
+            userTrees.value.push((await safeGetDoc('/trees', treeID)).data());
+        });
+    };
 
     const getPersonDoc = async (pid) => {
         const personDoc = await getDoc(doc(db, "users", pid));
@@ -51,6 +58,7 @@
     }
 
     const selectedPerson = ref();
+    const selectedPersonID = ref();
 
     // Get friend requests
     const incomingFriendReq = ref([]);
@@ -163,7 +171,7 @@
             const friend = await safeGetDoc('/users', fid);
             friends.value.push(friend.data());
         });
-    }
+    };
 
     // Remove a friend
     const removeFriend = async (pid) => {
@@ -178,16 +186,37 @@
 
         // Remove in user
         safeUpdateDoc('/users', auth.value.currentUser.uid, { friends: [...user.value.friends] });
-    }
+    };
+
+    // Load person data
+    const loadPerson = async (pid) => {
+        const person = (await safeGetDoc('/users', pid)).data();
+
+        selectedPerson.value = person;
+        selectedPersonID.value = pid;
+    };
 
     // Add a person to tree
     const addingToTree = ref(false);
     const addToTree = async (pid, tid) => {
-        const person = getPersonDoc(pid).data();
+        const person = (await getPersonDoc(pid)).data();
         await updateDoc(doc(db, "users", pid), {
             trees: [...person.trees, tid],
         });
-    }
+
+        location.reload();
+    };
+
+    // Remove a person from tree
+    const removeFromTree = async (pid, tid) => {
+        const person = (await getPersonDoc(pid)).data();
+        person.trees.splice(person.trees.indexOf(tid), 1);
+        await updateDoc(doc(db, "users", pid), {
+            trees: [...person.trees],
+        });
+
+        location.reload();
+    };
 
     // Dialog bools
     const requestDialogOpen = ref(false);
@@ -196,6 +225,7 @@
     // Close all dialogs
     const closeDialogs = () => {
         selectedPerson.value = null;
+        selectedPersonID.value = null;
         requestDialogOpen.value = false
     };
 
@@ -204,6 +234,7 @@
         document.title = "gimko | People"
         await getUser();
         getFriendRequests();
+        await getUserTrees();
         getFriends();
         console.log(user.value);
     });
@@ -263,7 +294,12 @@
                     <!-- Add to tree -->
                     <button 
                         class="hover-up-p" 
-                        @click="() => {addToTreeDialogOpen = true; selectedPerson = person.id}" 
+                        @click="() => {
+                            addToTreeDialogOpen = true;
+                            selectedPerson = person.data();
+                            selectedPersonID = person.id;
+                            loadPerson(person.id);
+                        }" 
                         v-if="user.friends.includes(person.id)"
                     >
                         <p>ADD TO TREE</p>
@@ -287,11 +323,52 @@
             <div class="bg"></div>
         </div>
 
-        <!-- Add to tree -->
-        <div class="add-to-tree">
-            <div class="tree-selector">
+        <!-- Person info -->
+        <div class="person-info" v-bind:class="(!selectedPerson)?'hidden-left--50':''">
+            <h2 v-if="selectedPerson">{{ selectedPerson.username }}</h2>
+            <!-- Add to tree -->
+            <div class="add-to-tree" v-if="addToTreeDialogOpen">
+                <h3 style="text-align: center;">Add to tree</h3>
+                <div class="tree-selector">
+                    <div v-for="tree, i in userTrees" class="user-tree">
+                        <p>{{ tree.name }}</p>
+                        
+                        <p>
+                            <button 
+                                class="hover-up-p add-to-tree-btn" 
+                                @click="addToTree(selectedPersonID, user.trees[i])"
+                                v-if="!selectedPerson.trees.includes(user.trees[i])"
+                                >
+                                <p>ADD</p>
+                                <div class="bg op-30"></div>
+                            </button>
+                            <button
+                                class="hover-up-p add-to-tree-btn"
+                                @click="removeFromTree(selectedPersonID, user.trees[i])"
+                                v-if="selectedPersonID == tree.ownerID && selectedPerson.trees.includes(user.trees[i])"
+                                >
+                                <p>REMOVE</p>
+                                <div class="bg op-30"></div>
+                            </button>
+                        </p>
 
+                        <div class="bg op-20"></div>
+                    </div>
+                    <p v-if="userTrees.length == 0" style="text-align: center; width: 100%;">No trees</p>
+                </div>
+
+                <div class="bg op-20"></div>
             </div>
+            <!-- Add to tree button -->
+            <button class="hover-up-p" v-if="!addToTreeDialogOpen" @click="() => addToTreeDialogOpen = true">
+                <p>Add To Tree</p>
+                <div class="bg"></div>
+            </button>
+
+            <button class="close-button hover-up-p" @click="closeDialogs()">
+                <p>Close</p>
+                <div class="bg op-20"></div>
+            </button>
         </div>
 
         <!-- Accept friend request -->
@@ -345,17 +422,17 @@
 
         <!-- Friends list -->
         <div class="friend-list-container">
-            <h2>Friends</h2>
+            <h1>Friends</h1>
             <div class="friend-selector" v-if="friends.length > 0">
                 <div class="friend-panel" v-for="friendID, i in user.friends">
                     <h2>{{ friends[i].username }}</h2>
-                    <button class="hover-up-p" @click="loadPerson(friendID)">
+                    <button class="hover-up-p info" @click="loadPerson(friendID)">
                         <p>Info</p>
                         <div class="bg"></div>
                     </button>
                     <button class="hover-up-p" @click="removeFriend(friendID)">
                         <p>Remove Friend</p>
-                        <div class="bg"></div>
+                        <div class="bg red op-50"></div>
                     </button>
                     <div class="bg op-20"></div>
                 </div>

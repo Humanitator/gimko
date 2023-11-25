@@ -75,6 +75,22 @@ $bgcontrast: #ffdd00;
     transition: opacity 1s;
 }
 
+.friend-panel {
+    position: relative;
+    max-width: 100pt;
+
+    padding: 20pt 3%;
+}
+
+.friend-panel > button {
+    margin: 5pt 0;
+    width: 100%;
+}
+
+.friend-panel > .info > p {
+    font-size: inherit;
+}
+
 .lonely {
     position: static;
     width: 30%;
@@ -152,7 +168,7 @@ $bgcontrast: #ffdd00;
 }
 
 .search-result:hover > h2 {
-    transform: translateX(-50%) translateY(-200%);
+    transform: translateX(-50%) translateY(-100%);
 
     transition: all 0.5s;
 }
@@ -246,5 +262,64 @@ $bgcontrast: #ffdd00;
     border-top-right-radius: 0;
 }
 
+// ----- Person info --------
+.person-info {
+    position: fixed;
+
+    background-color: $secondary;
+    border-radius: 20pt;
+
+    width: 50%;
+    height: 70%;
+    
+    padding: 10pt 3%;
+    
+    z-index: 5;
+
+    left: 50%;
+    top: 50%;
+    transform: translateX(-50%) translateY(-50%);
+
+    transition: all ease 1s;
+}
 
 // ----- Add to tree --------
+.add-to-tree {
+    position: relative;
+    
+    padding: 5pt 0;
+    padding-bottom: 10pt;
+    
+    height: fit-content;
+
+    z-index: 7;
+}
+
+.tree-selector {
+    position: relative;
+    display: flex;
+
+    width: 100%;
+
+    z-index: 4;
+
+    overflow-x: scroll;
+}
+
+.user-tree {
+    position: relative;
+    padding: 10pt 5%;
+    margin: 0 3pt;
+
+    min-width: 50pt;
+    width: fit-content;
+}
+
+.user-tree > p {
+    margin: 2pt 0;
+    text-align: center;
+}
+
+.add-to-tree-btn {
+    padding: 5pt 20%;
+}

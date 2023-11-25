@@ -40,7 +40,9 @@ button {
     border-radius: 10pt;
     padding: 10pt 3%;
     
+    font-family: "Nunito", sans-serif;
     font-size: 16pt;
+    font-weight: 300;
 
     color: $text;
     background-color: transparent;
@@ -102,10 +104,22 @@ h1 {
     color: $text;
 }
 
+h2 {
+    margin: 0;
+    text-align: center;
+    font-size: 40pt;
+    font-weight: 200;
+
+    padding: 5pt 0;
+
+    color: $text;
+}
+
 p {
     margin: 0;
+    font-family: "Nunito", sans-serif;
     font-size: 12pt;
-    font-weight: 300;
+    font-weight: 500;
 }
 
 .bg {
@@ -200,6 +214,42 @@ nav > *:hover {
 .shown-0-0 {
     transform: translateX(0) translateY(0);
     transition: transform ease 1s;
+}
+
+// ---- Hidden ----
+.hidden-left--50 {
+    left: 0;
+    transform: translateX(-100%) translateY(-50%);
+
+    transition: transform left ease 1s;
+}
+
+.hidden-right--50 {
+    right: 0;
+    transform:  translateX(100%) translateY(-50%);
+
+    transition: transform right ease 1s;
+}
+
+.hidden-top--50 {
+    top: 0;
+    transform: translateX(-50%) translateY(-100%);
+
+    transition: transform top ease 1s;
+}
+
+.hidden-bottom--50 {
+    bottom: 0;
+    transform: translateX(-50%) translateY(100%);
+
+    transition: transform bottom ease 1s;
+}
+
+.hidden-bottom-0 {
+    bottom: 0;
+    transform: translateX(0) translateY(100%);
+
+    transition: transform bottom ease 1s;
 }
 
 // ---- animations ----
