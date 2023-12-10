@@ -19,12 +19,15 @@ export const defaultTree = {
 
 // Default struct for person in tree
 export const defaultTreePerson = {
-    name: "",
+    name: "New Person",
+    dob: '1920-01-02',
+    dod: '1992-04-06',
+    isDeceased: false,
     description: "",
-    dob: "1920-01-02",
-    dod: "1992-04-06",
-    children: [],
-    parents: [],
-    spouses: [],
+
     id: -1,
+    parents: [null],
+    primaryParents: [-1],
+    children: [],
+    spouses: [],
 }

@@ -197,7 +197,6 @@
     };
 
     // Add a person to tree
-    const addingToTree = ref(false);
     const addToTree = async (pid, tid) => {
         const person = (await getPersonDoc(pid)).data();
         await updateDoc(doc(db, "users", pid), {
@@ -226,7 +225,7 @@
     const closeDialogs = () => {
         selectedPerson.value = null;
         selectedPersonID.value = null;
-        requestDialogOpen.value = false
+        requestDialogOpen.value = false;
     };
 
     // When mounted
@@ -327,7 +326,7 @@
         <div class="person-info" v-bind:class="(!selectedPerson)?'hidden-left--50':''">
             <h2 v-if="selectedPerson">{{ selectedPerson.username }}</h2>
             <!-- Add to tree -->
-            <div class="add-to-tree" v-if="addToTreeDialogOpen">
+            <div class="add-to-tree" v-if="addToTreeDialogOpen && selectedPerson">
                 <h3 style="text-align: center;">Add to tree</h3>
                 <div class="tree-selector">
                     <div v-for="tree, i in userTrees" class="user-tree">

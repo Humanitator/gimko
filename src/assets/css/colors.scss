@@ -21,96 +21,122 @@ $bgcontrast: #ffdd00;
 // ---- BG presets ----
 
 .text {
-    background-color: $text;
+    background-color: $text !important;
 }
 
 .primary {
-    background-color: $primary;
+    background-color: $primary !important;
 }
 
 .secondary {
-    background-color: $secondary;
+    background-color: $secondary !important;
 }
 
 .accent {
-    background-color: $accent;
+    background-color: $accent !important;
 }
 
 .red {
-    background-color: red;
+    background-color: red !important;
+}
+
+// ---- Text Presets ----
+.t-text {
+    color: $text !important;
+}
+
+.t-primary {
+    color: $primary !important;
+}
+
+.t-secondary {
+    color: $secondary !important;
+}
+
+.t-bg {
+    color: $bg !important;
+}
+
+.t-accent {
+    color: $accent !important;
 }
 
 // ---- z-indexes ------
-.z-0 {
-    z-index: 0;
-}
 
 .z--5 {
-    z-index: -5;
+    z-index: -5 !important;
 }
 
 .z--3 {
-    z-index: -3;
+    z-index: -3 !important;
+}
+
+.z-0 {
+    z-index: 0 !important;
+}
+
+.z-1 {
+    z-index: 1 !important;
 }
 
 .z-5 {
-    z-index: 5;
+    z-index: 5 !important;
 }
 
 .z-10 {
-    z-index: 10;
+    z-index: 10 !important;
 }
 
 .z-15 {
-    z-index: 15;
+    z-index: 15 !important;
 }
 
 .z-20 {
-    z-index: 20;
+    z-index: 20 !important;
 }
 
 // ---- Opacity presets ----
 
 .op-0 {
-    opacity: 0%;
+    opacity: 0% !important;
 }
 
 .op-10 {
-    opacity: 10%;
+    opacity: 10% !important;
 }
 
 .op-20 {
-    opacity: 20%;
+    opacity: 20% !important;
 }
 
 .op-30 {
-    opacity: 30%;
+    opacity: 30% !important;
 }
 
 .op-40 {
-    opacity: 40%;
+    opacity: 40% !important;
 }
 
 .op-50 {
-    opacity: 50%;
+    opacity: 50% !important;
 }
 
 .op-60 {
-    opacity: 60%;
+    opacity: 60% !important;
 }
 
 .op-70 {
-    opacity: 70%;
+    opacity: 70% !important;
 }
 
 .op-80 {
-    opacity: 80%;
+    opacity: 80% !important;
 }
 
 .op-90 {
-    opacity: 90%;
+    opacity: 90% !important;
 }
 
 .op-100 {
-    opacity: 100%;
+    opacity: 100% !important;
 }

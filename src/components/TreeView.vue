@@ -5,6 +5,7 @@
     import { onMounted, ref } from 'vue';
     import { useRouter } from 'vue-router';
     import personPointer from '@/classes/personPointer.js';
+    import { defaultTreePerson } from '@/firebase/defaultStructs';
 
     const router = useRouter();
     const tid = router.currentRoute.value.params.id; // ID of current tree
@@ -18,18 +19,7 @@
 
     const ftreePoses = ref([]);
 
-    const personFormat = {
-        name: "New Person",
-        dob: '1920-01-02',
-        dod: '1992-04-06',
-        isDeceased: false,
-        description: "",
-
-        id: -1,
-        parents: [null],
-        children: [],
-        spouses: [],
-    };
+    const personFormat = structuredClone(defaultTreePerson);
     let currentPID;
     let biggestPID;
 
@@ -249,7 +239,15 @@
                     let families = [];
                     let i = 0;
                     while (i < newFTree[last].length) {
-                        families.push([newFTree[last][i].id, ...newFTree[last][i].spouses]);
+                        // Get primary person
+                        let j = i;
+                        let primPers = newFTree[last][j];
+                        while (primPers.primaryParents.length == 0) {
+                            primPers = newFTree[last][j];
+                            j++;
+                        }
+
+                        families.push([primPers.id, ...primPers.spouses]);
                         i += newFTree[last][i].spouses.length + 1;
                     }
 
@@ -271,6 +269,8 @@
             });
             ftree.value = newFTree;
         }
+        console.log(ftree.value);
+        console.log(tree.value);
     };
 
     // Add a person to tree
@@ -397,6 +397,8 @@
         getPerson(pid).spouses.forEach(spouseID => {
             newPerson.value.parents.push(spouseID);
         });
+        newPerson.value.primaryParents.push(currentPID);
+        console.log(newPerson.value);
         addPerson(newPerson.value);
     };
     
@@ -406,7 +408,9 @@
         if (pid == null) {
             pid = currentPID;
         }
-
+        // Remove parents
+        newPerson.value.primaryParents = [];
+        
         // Add spuose's children as children
         newPerson.value.children = [...getPerson(pid).children];
 
@@ -538,16 +542,19 @@
                      + 'pt)',
                     top: 'calc(' + setPersonPosV(person.id, i) + 'pt)',
                 }">
-                    <h2>{{ person.name }}</h2>
+                    <h2 style="position: relative;" class="z-5" :class="(person.primaryParents.length > 0)?'t-bg':'t-text'">{{ person.name }}</h2>
                     <div class="person-actions">
+                        <!-- Info view -->
                         <button class="hover-up-p" @click="showPersonInfo(person.id)">
                             <p>INFO</p>
                             <div class="bg secondary op-50"></div>
                         </button>
-                        <button class="hover-up-p" @click="selectNewPersonType(person.id)">
+                        <!-- Add (Only for primary) -->
+                        <button v-if="person.primaryParents.length > 0" class="hover-up-p" @click="selectNewPersonType(person.id)"> 
                             <p>ADD</p>
                             <div class="bg secondary op-50"></div>
                         </button>
+                        <!-- Remove person -->
                         <button class="hover-up-p" @click="() => removePID = person.id">
                             <p>REMOVE</p>
                             <div class="bg red op-80"></div>
@@ -570,7 +577,33 @@
                     </div>
 
                     <!-- Draw relation lines -->
-                    <div v-if="(person.spouses.length == 0) || (j == Math.round(gen.indexOf(gen.find(p => p.spouses.includes(person.id))) + gen.find(p => p.spouses.includes(person.id)).spouses.length/2))">
+                    <!-- --- NEW --- (Draw actual relations) -->
+                    <!-- Lines are drawn from child to parent (DOWN -> UP) -->
+                    <div v-if="person.primaryParents.length > 1">
+                        <hr class="relation-line" v-bind:style="{
+                            left: 'calc(50% + ' + (
+                                -(getPersonPos((person.primaryParents[0] > -1)?person.primaryParents[0]:person.primaryParents[1]).x - getPersonPos(person.id).x)/2
+                            ) + 'pt)',
+                            top: 'calc(' + (
+                            //    -tPersonHeight - 2*tPersonPaddingV - tPersonMarginV
+                                -20
+                            ) + 'pt)',
+                            transform: 'translateX(-50%) rotate(' + (
+                                -Math.atan(
+                                    (2*tPersonMarginV) / 
+                                    -(getPersonPos((person.primaryParents[0] > -1)?person.primaryParents[0]:person.primaryParents[1]).x - getPersonPos(person.id).x)
+                                )
+                            ) + 'rad)',
+                            width: Math.sqrt(
+                                ((getPersonPos((person.primaryParents[0] > -1)?person.primaryParents[0]:person.primaryParents[1]).x - getPersonPos(person.id).x))**2 + 
+                                (2 * tPersonMarginV)**2
+                            ) + 'pt',
+                        }" />
+                    </div>
+
+                    <!-- --- OLD --- (draw lines from middle parent) -->
+                    <!-- Lines are drawn from parent to child (UP -> DOWN) -->
+                    <!-- <div v-if="(person.spouses.length == 0) || (j == Math.round(gen.indexOf(gen.find(p => p.spouses.includes(person.id))) + gen.find(p => p.spouses.includes(person.id)).spouses.length/2))">
                         <hr v-for="child in person.children" class="relation-line" v-bind:style="{
                             left: 'calc(50% + ' + (
                                 -(getPersonPos(child).x - getPersonPos(person.id).x)/2
@@ -589,9 +622,9 @@
                                 (2 * tPersonMarginV + 40)**2
                             ) + 'pt',
                         }" />
-                    </div>
+                    </div> -->
 
-                    <div class="bg"></div>
+                    <div class="bg z-1" :class="(person.primaryParents.length > 0)?'accent':''"></div>
                 </div>
             </div>
         </div>
@@ -669,6 +702,15 @@
                 <p>Date of birth: <input v-model="newPerson.dob" type="date" /></p> <!-- Date of birth -->
                 <p>Is deceased? <input type="checkbox" v-model="newPerson.isDeceased"></p> <!-- Is deceased -->
                 <p v-if="newPerson.isDeceased">Date of death: <input v-model="newPerson.dod" type="date" /></p> <!-- Date of death -->
+                <p v-if="currentNewPersonType != 'spouse'"><label for="parents">Select Second Parent:</label></p> <!-- Select second parent -->
+                <p v-if="currentPID && currentNewPersonType != 'spouse'">
+                    <select name="parents" id="parents" v-model="newPerson.primaryParents[0]">
+                        <option :value="-1" :selected="true">Adopted</option>
+                        <option v-for="parentID in getPerson(currentPID).spouses" :value="parentID">
+                            {{ getPerson(parentID).name }}
+                        </option>
+                    </select>
+                </p>
                 <p><label for="new-person-description">Description: </label></p> <!-- Description -->
                 <p><textarea class="desc" id="new-person-description" name="Description" v-model="newPerson.description"></textarea></p>
                 <button class="hover-up-p" @click="(currentNewPersonType == 'child')?addChild():addSpouse()">
