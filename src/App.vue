@@ -34,7 +34,6 @@
 <template>
   <nav>
     <router-link to="/" style="flex-basis: 2;">Home</router-link>
-    <router-link to="/about">About</router-link>
     <router-link to="/people">People</router-link>
     <router-link v-if="gotAuth && isLoggedIn" to="/tree">Tree</router-link>
     <router-link v-if="gotAuth && !isLoggedIn" to="/sign-in">Sign in</router-link>

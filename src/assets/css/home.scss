@@ -1,0 +1,41 @@
+// Dark
+$text: #ffffff;
+$bg: #3f7f32;
+$primary: #77d21c;
+$secondary: #084908;
+$accent: #f2f22b;
+
+
+// All
+.main-container {
+    position: relative;
+    left: 0;
+    top: 0;
+}
+
+// ---- Title ----
+.title-container {
+    position: relative;
+    text-align: center;
+    height: 80vh;
+}
+
+.title-container h1 {
+    font-weight: 300;
+    line-height: 80vh;
+}
+
+// ---- Article ----
+.article-small {
+    position: relative;
+    margin: 10pt 2%;
+    padding: 10pt 2%;
+    width: 50%;
+    min-height: 100pt;
+}
+
+.article-small h4 {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
