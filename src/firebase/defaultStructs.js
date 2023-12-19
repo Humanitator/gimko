@@ -17,13 +17,20 @@ export const defaultTree = {
     people: [],
 }
 
+export const defaultPersonArticle = {
+    title: "New article",
+    content: "Something about the person",
+}
+
 // Default struct for person in tree
 export const defaultTreePerson = {
     name: "New Person",
     dob: '1920-01-02',
     dod: '1992-04-06',
     isDeceased: false,
-    description: "",
+    articles: [
+        structuredClone(defaultPersonArticle),
+    ],
 
     id: -1,
     parents: [null],

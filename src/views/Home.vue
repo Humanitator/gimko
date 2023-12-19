@@ -22,10 +22,10 @@
       <h4>Share your family tree with other people!</h4>
       <div class="bg op-30"></div>
     </div>
-    <button class="hover-up-p" style="">
+    <!-- <button class="hover-up-p" style="">
       <h3>Get started!</h3>
       <div class="bg"></div>
-    </button>
+    </button> -->
   </div>
 </template>
 

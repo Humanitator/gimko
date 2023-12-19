@@ -2,6 +2,7 @@
 
 body {
     margin: 0;
+    overflow-x: hidden;
 
     font-family: "Nunito", sans-serif;
     font-size: 12pt;
@@ -85,6 +86,7 @@ textarea {
     width: 50%;
     height: 100pt;
 
+    margin: 4pt 0;
     padding: 1%;
     border: none;
     outline: none;
@@ -130,6 +132,16 @@ h4 {
     margin: 0;
     text-align: left;
     font-size: 26pt;
+    font-weight: 300;
+
+    padding: 2pt 0;
+    color: $text;
+}
+
+h5 {
+    margin: 0;
+    text-align: left;
+    font-size: 20pt;
     font-weight: 300;
 
     padding: 2pt 0;
@@ -271,6 +283,17 @@ nav > *:hover {
     transform: translateX(0) translateY(100%);
 
     transition: transform bottom ease 1s;
+}
+
+// ---- positioning ----
+.pos-right-inline {
+    position: relative;
+    float: inline-end;
+}
+
+.pos-right {
+    position: relative;
+    float: right;
 }
 
 // ---- animations ----

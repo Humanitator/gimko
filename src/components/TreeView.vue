@@ -5,7 +5,7 @@
     import { onMounted, ref } from 'vue';
     import { useRouter } from 'vue-router';
     import personPointer from '@/classes/personPointer.js';
-    import { defaultTreePerson } from '@/firebase/defaultStructs';
+    import { defaultTreePerson, defaultPersonArticle } from '@/firebase/defaultStructs';
 
     const router = useRouter();
     const tid = router.currentRoute.value.params.id; // ID of current tree
@@ -252,6 +252,7 @@
                     }
 
                     // Align with parents
+                    // TODO: Align with second parents
                     newFTree[last] = [];
                     i = 0;
                     while (i < lastGen.length) { // Go through each "family head" (First person from family)
@@ -421,6 +422,16 @@
         });
 
         addPerson(newPerson.value);
+    };
+
+    // Add an article
+    const addArticle = (person) => {
+        person.articles.push(structuredClone(defaultPersonArticle));
+    };
+
+    // Remove an article
+    const removeArticle = (person, index) => {
+        person.articles.splice(index);
     };
 
     // Show person info
@@ -631,10 +642,16 @@
 
         <!-- Person info -->
         <div class="selected-person-info" v-bind:class="(personIsSelected)?'shown':''">
-            <h2 v-if="selectedPerson">{{ selectedPerson.name }} ({{ new Date(selectedPerson.dob).getFullYear() }} - {{ new Date(selectedPerson.dod).getFullYear() }})</h2>
-            <article v-if="selectedPerson">
-                <p> {{ selectedPerson.description }} </p>
-            </article>
+            <h2 v-if="selectedPerson && selectedPerson.isDeceased">{{ selectedPerson.name }} ({{ new Date(selectedPerson.dob).getFullYear() }} - {{ new Date(selectedPerson.dod).getFullYear() }})</h2>
+            <h2 v-if="selectedPerson && !selectedPerson.isDeceased">{{ selectedPerson.name }} ({{ new Date(selectedPerson.dob).getFullYear() }})</h2>
+
+            <!-- Articles -->
+            <div v-if="selectedPerson" v-for="article in selectedPerson.articles">
+                <h5>{{ article.title }}</h5>
+                <article >
+                    <p> {{ article.content }} </p>
+                </article>
+            </div>
 
             <button class="edit-button hover-up-p" @click="editPerson(selectedPerson.id)">
                 <p>EDIT</p>
@@ -654,18 +671,35 @@
             <div class="add-person-form" v-if="editedPerson">
                 <p>Name: <input v-model="editedPerson.name" type="text" /></p> <!-- Name -->
                 <p>Date of birth: <input v-model="editedPerson.dob" type="date" /></p> <!-- Date of birth -->
-                <p>Is deceased? <input type="checkbox" v-model="newPerson.isDeceased"></p> <!-- Is deceased -->
-                <p v-if="newPerson.isDeceased">Date of death: <input v-model="editedPerson.dod" type="date" /></p> <!-- Date of death -->
-                <p><label for="new-person-description">Description: </label></p> <!-- Description -->
-                <p><textarea class="desc" id="new-person-description" name="Description" v-model="editedPerson.description"></textarea></p>
-                <button class="hover-up-p" @click="confirmEdit()">
-                    <p>Confirm</p>
+                <p>Is deceased? <input type="checkbox" v-model="editedPerson.isDeceased"></p> <!-- Is deceased -->
+                <p v-if="editedPerson.isDeceased">Date of death: <input v-model="editedPerson.dod" type="date" /></p> <!-- Date of death -->
+                
+                <!-- Articles -->
+                <h4>Articles:</h4>
+                <div v-for="article, i in editedPerson.articles">
+                    <p>Title: <input v-model="article.title" type="text" /></p>
+                    <p><textarea class="desc" v-model="article.content"></textarea></p>
+                    <button class="hover-up-p" style="margin: 3pt 0;" @click="removeArticle(editedPerson, i)">
+                        <p>Remove article</p>
+                        <div class="bg red op-30"></div>
+                    </button>
+                </div>
+                
+                <!-- Add article -->
+                <button class="hover-up-p" style="margin: 4pt 0;" @click="addArticle(editedPerson)">
+                    <p>Add article</p>
                     <div class="bg"></div>
+                </button>
+
+                <!-- Confirm -->
+                <button class="hover-up-p" style="float: inline-end;" @click="confirmEdit()">
+                    <p>Confirm</p>
+                    <div class="bg op-40"></div>
                 </button>
             </div>
 
             <!-- Exit -->
-            <button class="exit-button hover-up-p" @click="closePersonInfo()">
+            <button class="exit-button hover-up-p pos-right-inline" @click="closePersonInfo()">
                 <p>Close</p>
                 <div class="bg accent"></div>
             </button>
@@ -711,16 +745,32 @@
                         </option>
                     </select>
                 </p>
-                <p><label for="new-person-description">Description: </label></p> <!-- Description -->
-                <p><textarea class="desc" id="new-person-description" name="Description" v-model="newPerson.description"></textarea></p>
-                <button class="hover-up-p" @click="(currentNewPersonType == 'child')?addChild():addSpouse()">
-                    <p>ADD</p>
+
+                <!-- Articles -->
+                <h3>Articles:</h3>
+                <div v-for="article, i in newPerson.articles">
+                    <p>Title: <input v-model="article.title" type="text" /></p>
+                    <p><textarea class="desc" v-model="article.content"></textarea></p>
+                    <button class="hover-up-p" style="margin: 3pt 0;" @click="removeArticle(newPerson, i)">
+                        <p>Remove article</p>
+                        <div class="bg red op-30"></div>
+                    </button>
+                </div>
+
+                <!-- Add article -->
+                <button class="hover-up-p" style="margin: 4pt 0;" @click="addArticle(newPerson)">
+                    <p>Add article</p>
                     <div class="bg"></div>
+                </button>
+
+                <button class="hover-up-p" style="float: inline-end;" @click="(currentNewPersonType == 'child')?addChild():addSpouse()">
+                    <p>ADD</p>
+                    <div class="bg op-40"></div>
                 </button>
             </div>
 
             <!-- Exit -->
-            <button class="exit-button hover-up-p" @click="closePersonInfo()">
+            <button class="exit-button hover-up-p pos-right-inline" @click="closePersonInfo()">
                 <p>Close</p>
                 <div class="bg accent"></div>
             </button>

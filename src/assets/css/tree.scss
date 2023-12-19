@@ -252,11 +252,12 @@ article p {
 // ---- Add person ----
 .add-person-from-type-container {
     position: fixed;
+    overflow-y: scroll;
 
     padding: 10pt 2%;
     
     width: 70%;
-    height: 70%;
+    height: 80%;
     
     top: 50%;
     left: 50%;
@@ -326,11 +327,12 @@ article p {
 // ----- Edit prson info -------
 .edit-person-info-container {
     position: fixed;
+    overflow-y: scroll;
 
     padding: 10pt 2%;
     
     width: 70%;
-    height: 70%;
+    height: 80%;
     
     top: 50%;
     left: 50%;

@@ -42,6 +42,7 @@
     const creatingTree = ref(false);
     const newTreeName = ref("New tree");
     const createTree = async () => {
+        const auth = getAuth();
         creatingTree.value = true;
         if (newTreeName.value === "") {
             newTreeName.value = "New tree";
@@ -57,14 +58,13 @@
         }
 
         // Make new tree
-        const treeObj = defaultTree.structuredClone();
+        const treeObj = structuredClone(defaultTree);
         treeObj.name = newTreeName.value;
         treeObj.ownerID = auth.currentUser.uid;
 
         const treeRef = await addDoc(treeColRef, treeObj);
 
         // Get user trees
-        const auth = getAuth();
         const userRef = doc(db, "users", auth.currentUser.uid);
         const userDoc = await getDoc(userRef);
 
@@ -127,7 +127,7 @@
             <p>Name:</p>
             <p><input type="text" v-model="newTreeName" placeholder="New tree"></p>
     
-            <button v-if="!creatingTree" class="hover-up-p" @click="createTree">
+            <button v-if="!creatingTree" class="hover-up-p" @click="createTree()">
                 <p>Create tree</p>
             </button>
 
