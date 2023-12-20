@@ -235,7 +235,7 @@
                 
                 // Align with parents
                 if (lastGen) {
-                    // Sort by families
+                    // Sort by families (With primary person in first)
                     let families = [];
                     let i = 0;
                     while (i < newFTree[last].length) {
@@ -247,23 +247,47 @@
                             j++;
                         }
 
-                        families.push([primPers.id, ...primPers.spouses]);
+                        families.push([primPers]);
+                        primPers.spouses.forEach(s => {
+                            families[families.length-1].push(getPerson(s));
+                        });
+
                         i += newFTree[last][i].spouses.length + 1;
                     }
 
                     // Align with parents
                     // TODO: Align with second parents
                     newFTree[last] = [];
+                    // NEW
                     i = 0;
-                    while (i < lastGen.length) { // Go through each "family head" (First person from family)
-                        if (lastGen[i].children.length > 0) {
-                            lastGen[i].children.forEach(child => {
-                                const family = getPerson(families.find(f => f.find(p => p == child)));
-                                newFTree[last].push(...family);
-                            });
+                    while (i < newFTree[last-1].length) {
+                        const parent = newFTree[last-1][i];
+                        let family;
+                        // Different cases for adopted people
+                        if (parent.primaryParents.length > 0) { // Add adopted people (If parent is main)
+                            family = families.find(f => f[0].primaryParents[0] == -1 && f[0].primaryParents[1] == parent.id);
+                        } else { // If parent is a spouse
+                            family = families.find(f => f[0].primaryParents[0] == parent.id);
                         }
-                        i += lastGen[i].spouses.length + 1;
+
+                        if (family) {
+                            newFTree[last].push(...family);
+                        }
+
+                        i++;
                     }
+
+                    // OLD
+                    // i = 0;
+                    // while (i < lastGen.length) { // Go through each "family head" (First person from family)
+                    //     if (lastGen[i].children.length > 0) {
+                    //         lastGen[i].children.forEach(child => {
+                    //             const family = getPerson(families.find(f => f.find(p => p == child)));
+                    //             newFTree[last].push(...family);
+                    //         });
+                    //     }
+                    //     i += lastGen[i].spouses.length + 1;
+                    // }
                 }
 
                 lastGen = newFTree[last];
