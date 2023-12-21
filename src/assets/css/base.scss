@@ -244,6 +244,18 @@ nav > *:hover {
     transition: transform ease 1s;
 }
 
+.shown-50-50 {
+    transform: translateX(50%) translateY(50%);
+
+    transition: transform ease 1s;
+}
+
+.shown-100--50 {
+    transform: translateX(100%) translateY(-50%);
+    
+    transition: transform ease 1s;
+}
+
 .shown-0-0 {
     transform: translateX(0) translateY(0);
     transition: transform ease 1s;
@@ -271,8 +283,7 @@ nav > *:hover {
     transition: transform top ease 1s;
 }
 
-.hidden-bottom--50 {
-    bottom: 0;
+.hidden--50-100 {
     transform: translateX(-50%) translateY(100%);
 
     transition: transform bottom ease 1s;

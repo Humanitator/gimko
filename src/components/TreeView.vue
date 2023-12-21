@@ -232,7 +232,7 @@
                         });
                     }
                 });
-                
+
                 // Align with parents
                 if (lastGen) {
                     // Sort by families (With primary person in first)
@@ -252,7 +252,7 @@
                             families[families.length-1].push(getPerson(s));
                         });
 
-                        i += newFTree[last][i].spouses.length + 1;
+                        i += primPers.spouses.length + 1;
                     }
 
                     // Align with parents
@@ -260,18 +260,26 @@
                     newFTree[last] = [];
                     // NEW
                     i = 0;
-                    while (i < newFTree[last-1].length) {
-                        const parent = newFTree[last-1][i];
-                        let family;
+                    while (i < lastGen.length) {
+                        const parent = lastGen[i];
+                        let familyIndex = 1;
                         // Different cases for adopted people
                         if (parent.primaryParents.length > 0) { // Add adopted people (If parent is main)
-                            family = families.find(f => f[0].primaryParents[0] == -1 && f[0].primaryParents[1] == parent.id);
+                            while (familyIndex > -1) {
+                                familyIndex = families.findIndex(f => f[0].primaryParents[0] == -1 && f[0].primaryParents[1] == parent.id);
+                                if (familyIndex > -1) {
+                                    newFTree[last].push(...families[familyIndex]);
+                                    families.splice(familyIndex, 1);
+                                }
+                            }
                         } else { // If parent is a spouse
-                            family = families.find(f => f[0].primaryParents[0] == parent.id);
-                        }
-
-                        if (family) {
-                            newFTree[last].push(...family);
+                            while (familyIndex > -1) {
+                                familyIndex = families.findIndex(f => f[0].primaryParents[0] == parent.id);
+                                if (familyIndex > -1) {
+                                    newFTree[last].push(...families[familyIndex]);
+                                    families.splice(familyIndex, 1);
+                                }
+                            }
                         }
 
                         i++;
@@ -335,41 +343,74 @@
         refreshTree();
     };
 
-    // Remove a perosn from the tree
+    // Remove a person from the tree
     const removePID = ref();
     const removePerson = (pid) => {
         let person = getPerson(pid);
 
-        // Remove children
-        person.children.forEach(childID => {
-            const child = getPerson(childID);
-            child.parents.splice(child.parents.indexOf(person.id), 1);
-            if (child.parents.length == 0) {
-                // Add child to person's parents
-                if (person.parents[0] != null) {
-                    person.parents.forEach(parent => {
-                        getPerson(parent).children.push(child.id);
-                        child.parents.push(parent);
-                    });
-                } else {
-                    child.parents.push(person.parents[0]);
+        // NEW
+        // If person is primary
+        if (person.primaryParents.length > 1) {
+            // Move children up to first parent
+            let primParent = getPerson(person.primaryParents[1]);
+
+            // Set parent for children
+            person.children.forEach(childID => {
+                let child = getPerson(childID);
+                // Remove person as parent
+                child.parents.splice(child.parents.indexOf(person.id), 1);
+
+                // Add parents to child
+                child.parents.push(...person.parents);
+
+                // Set primary parents to adopted
+                child.primaryParents[0] = -1;
+                child.primaryParents[1] = primParent;
+            });
+
+            // Move spouses up
+            primParent.spouses.push(...person.spouses);
+            person.spouses.forEach(spouseID => {
+                let spouse = getPerson(spouseID);
+                // Remove person
+                spouse.spouses.splice(spouse.spouses.indexOf(person.id), 1);
+                // Add parent as spouse
+                spouse.spouses.push(...primParent.spouses);
+            });
+
+            // Add spouses to parent spouses (all other parents)
+            primParent.spouses.forEach(spouseID => {
+                let spouse = getPerson(spouseID);
+                spouse.spouses.push(...person.spouses);
+            });
+
+            // Add children to person's parent
+            primParent.children.push(...person.children);
+
+            // Remove person from parent
+            primParent.children.splice(parent.children.indexOf(person.id), 1);
+        } else if (person.primaryParents.length > 0) { // If person is primary AND is at top of tree
+            console.error("Can't remove first main person!");
+            showError("Can't remove first main person!");
+            return false;
+
+        } else { // If person is a spouse (isn't primary)
+            // Remove from spouses
+            person.spouses.forEach(spouseID => {
+                let spouse = getPerson(spouseID);
+                spouse.spouses.splice(spouse.spouses.indexOf(person.id), 1);
+            });
+
+            // Remove from children
+            person.children.forEach(childID => {
+                let child = getPerson(childID);
+                child.parents.splice(child.parents.indexOf(person.id), 1);
+                // Make child to adopted
+                if (child.primaryParents[0] == person.id) {
+                    child.primaryParents[0] = -1;
                 }
-            }
-        });
-
-        // Remove spuoses
-        person.spouses.forEach(spouseID => {
-            const spouse = getPerson(spouseID);
-            spouse.spouses.splice(spouse.spouses.indexOf(person.id), 1);
-        });
-
-        // Remove person from parents
-        person.parents.forEach(parentID => {
-            if (parentID != null) {
-                const parent = getPerson(parentID);
-                parent.children.splice(parent.children.indexOf(person.id), 1);
-            }
-        });
+            });
+        }
 
         // Remove from tree
         // console.log(...tree.value.people);
@@ -515,6 +556,16 @@
         return ftreePoses.value.find(p => p.pid == pid);
     };
 
+    // Show a error message
+    const errorMsg = ref("");
+    const errorMsgDurationMlsc = 2000;
+    const showError = async (errorMessage) => {
+        errorMsg.value = errorMessage;
+        setTimeout(function() {
+            errorMsg.value = "";
+        }, errorMsgDurationMlsc);
+    };
+
     // Check if user has access to tree
     let hasAccess = ref(false);
     const checkAccess = async () => {
@@ -553,17 +604,6 @@
     <!-- Tree view -->
     <div v-if="hasAccess && tree" style="position: relative;">
         <h1>{{ tree.name }}</h1>
-
-         <!-- Add new person
-            <div class="add-person-intree-container" v-if="person.children == 0">
-                <h3>Add person</h3>
-                <p>Name: <input type="text" v-model="newPersName"></p>
-                <button class="hover-up-p" @click="addPerson(person.id)">
-                    <p>Add person</p>
-                </button>
-                <div class="bg"></div>
-            </div> 
-        -->
 
         <!-- People -->
         <div class="people-tree" v-if="tree.people.length > 0">
@@ -697,7 +737,15 @@
                 <p>Date of birth: <input v-model="editedPerson.dob" type="date" /></p> <!-- Date of birth -->
                 <p>Is deceased? <input type="checkbox" v-model="editedPerson.isDeceased"></p> <!-- Is deceased -->
                 <p v-if="editedPerson.isDeceased">Date of death: <input v-model="editedPerson.dod" type="date" /></p> <!-- Date of death -->
-                
+                <p v-if="editedPerson.parents[0] != null">
+                    <select name="parents" id="parents" v-model="editedPerson.primaryParents[0]">
+                        <option :value="-1">Adopted</option>
+                        <option v-for="parentID in getPerson(editedPerson.primaryParents[1]).spouses" :value="parentID" :selected="editedPerson.primaryParents[0] == parentID">
+                            {{ getPerson(parentID).name }}
+                        </option>
+                    </select>
+                </p>
+
                 <!-- Articles -->
                 <h4>Articles:</h4>
                 <div v-for="article, i in editedPerson.articles">
@@ -731,24 +779,24 @@
 
         <!-- Select person type -->
         <div class="select-person-type-container" v-bind:class="(currentNewPersonType == '' && adddingPerson)?'shown-0--50':''">
-            <h2>Select person type</h2>
+            <h4 style="text-align: center;">Select person type</h4>
 
-            <button class="select-new-person-button hover-up-p" @click="addPersonFromType('child')">
+            <button class="select-new-person-button hover-up-p z-1" @click="addPersonFromType('child')">
                 <p>Child</p>
-                <div class="bg op-50"></div>
+                <div class="bg op-70 secondary"></div>
             </button>
 
-            <button class="select-new-person-button hover-up-p" @click="addPersonFromType('spouse')">
+            <button class="select-new-person-button hover-up-p z-1" @click="addPersonFromType('spouse')">
                 <p>Spouse</p>
-                <div class="bg op-50"></div>
+                <div class="bg op-70 secondary"></div>
             </button>
 
-            <button class="exit-button hover-up-p" @click="closePersonInfo()">
+            <button class="exit-button hover-up-p z-1" @click="closePersonInfo()">
                 <p>Close</p>
-                <div class="bg op-50"></div>
+                <div class="bg op-80 secondary"></div>
             </button>
 
-            <div class="bg"></div>
+            <div class="bg op-40"></div>
         </div>
 
         <!-- Add person from type -->
@@ -761,7 +809,7 @@
                 <p>Is deceased? <input type="checkbox" v-model="newPerson.isDeceased"></p> <!-- Is deceased -->
                 <p v-if="newPerson.isDeceased">Date of death: <input v-model="newPerson.dod" type="date" /></p> <!-- Date of death -->
                 <p v-if="currentNewPersonType != 'spouse'"><label for="parents">Select Second Parent:</label></p> <!-- Select second parent -->
-                <p v-if="currentPID && currentNewPersonType != 'spouse'">
+                <p v-if="currentPID && currentNewPersonType == 'child'">
                     <select name="parents" id="parents" v-model="newPerson.primaryParents[0]">
                         <option :value="-1" :selected="true">Adopted</option>
                         <option v-for="parentID in getPerson(currentPID).spouses" :value="parentID">
@@ -787,7 +835,7 @@
                     <div class="bg"></div>
                 </button>
 
-                <button class="hover-up-p" style="float: inline-end;" @click="(currentNewPersonType == 'child')?addChild():addSpouse()">
+                <button class="hover-up-p" style="float: inline-end;" @click="(currentNewPersonType == 'child')?addChild():((currentNewPersonType == 'parent')?addParent():addSpouse())">
                     <p>ADD</p>
                     <div class="bg op-40"></div>
                 </button>
@@ -807,24 +855,30 @@
         </button>
 
         <!-- Confirm person removal -->
-        <div class="confirm-person-remove" v-bind:class="(removePID)?'shown-0--50':''">
+        <div class="confirm-person-remove" v-bind:class="(removePID)?'shown-0-0':''">
             <h2>Are you sure?</h2>
-            <button class="hover-up-p" @click="closePersonInfo()">
+            <button v-if="removePID" class="hover-up-p" @click="closePersonInfo()">
                 <p>No</p>
                 <div class="bg secondary op-80 z--3"></div>
             </button>
-            <button class="hover-up-p" @click="removePerson(removePID)">
+            <button v-if="removePID" class="hover-up-p" @click="removePerson(removePID)">
                 <p>Yes</p>
                 <div class="bg red op-80 z--3"></div>
             </button>
-            <button class="hover-up-p" @click="closePersonInfo()">
+            <button v-if="removePID" class="hover-up-p" @click="closePersonInfo()">
                 <p>No</p>
                 <div class="bg secondary op-80 z--3"></div>
             </button>
             <div class="bg op-30 z--5"></div>
         </div>
+
+        <!-- Error mesasge -->
+        <div class="error-message z-10" :style="(errorMsg.length > 0)?'':'transform: translateX(-50%) translateY(calc(100% + 20pt))'">
+            <p>{{ errorMsg }}</p>
+            <div class="bg red op-40"></div>
+        </div>
        
-        <!--  IF NO PERON EXISTS -->
+        <!--  IF NO PERSON EXISTS -->
         <!-- Add new person form -->
         <div class="add-person-container" v-if="tree.people.length == 0">
             <h2>Add a person</h2>
