@@ -80,6 +80,9 @@
     }
 
     // Get person object from ID
+    /**
+        * Arguments can be INT or ARRAY
+    */
     const getPerson = (ID) => {
         if (typeof ID == "object") {
             let arr = [];
@@ -308,6 +311,7 @@
 
     // Add a person to tree
     const newPerson = ref(structuredClone(personFormat));
+    /** Adds ID, person as parent to it's children, person as spouse to it's spouses */
     const addPerson = (personObj) => {
         if (personObj.name == "") {
             personObj.name = "New person";
@@ -319,18 +323,6 @@
         // Set new id
         personObj.id = biggestPID + 1;
         biggestPID++;
-
-        // Add person as child to all parents
-        getPerson(personObj.parents).forEach(parent => {
-            if (parent != null){
-                parent.children.push(personObj.id);
-            }
-        });
-
-        // Add person as spouse to spouses
-        getPerson(personObj.spouses).forEach(spouse => {
-            spouse.spouses.push(personObj.id);
-        });
 
         // Add person to tree
         tree.value.people.push(structuredClone(personObj));
@@ -348,15 +340,13 @@
     const removePerson = (pid) => {
         let person = getPerson(pid);
 
-        // NEW
         // If person is primary
         if (person.primaryParents.length > 1) {
             // Move children up to first parent
             let primParent = getPerson(person.primaryParents[1]);
 
             // Set parent for children
-            person.children.forEach(childID => {
-                let child = getPerson(childID);
+            getPerson(person.children).forEach(child => {
                 // Remove person as parent
                 child.parents.splice(child.parents.indexOf(person.id), 1);
 
@@ -370,8 +360,7 @@
 
             // Move spouses up
             primParent.spouses.push(...person.spouses);
-            person.spouses.forEach(spouseID => {
-                let spouse = getPerson(spouseID);
+            getPerson(person.spouses).forEach(spouse => {
                 // Remove person
                 spouse.spouses.splice(spouse.spouses.indexOf(person.id), 1);
                 // Add parent as spouse
@@ -379,8 +368,7 @@
             });
 
             // Add spouses to parent spouses (all other parents)
-            primParent.spouses.forEach(spouseID => {
-                let spouse = getPerson(spouseID);
+            getPerson(primParent.spouses).forEach(spouse => {
                 spouse.spouses.push(...person.spouses);
             });
 
@@ -396,14 +384,12 @@
 
         } else { // If person is a spouse (isn't primary)
             // Remove from spouses
-            person.spouses.forEach(spouseID => {
-                let spouse = getPerson(spouseID);
+            getPerson(person.spouses).forEach(spouse => {
                 spouse.spouses.splice(spouse.spouses.indexOf(person.id), 1);
             });
 
             // Remove from children
-            person.children.forEach(childID => {
-                let child = getPerson(childID);
+            getPerson(person.children).forEach(child => {
                 child.parents.splice(child.parents.indexOf(person.id), 1);
                 // Make child to adopted
                 if (child.primaryParents[0] == person.id) {
@@ -413,17 +399,10 @@
         }
 
         // Remove from tree
-        // console.log(...tree.value.people);
         tree.value.people.splice(tree.value.people.indexOf(person), 1);
-        // console.log(...tree.value.people);
         
         // Refresh tree
         refreshTree();
-
-        // ftree.value.forEach(gen => {
-        //     console.log("Gen");
-        //     console.log(...gen);
-        // });
     }
 
     // Confirm a edit
@@ -457,14 +436,22 @@
         if (pid == null) {
             pid = currentPID;
         }
+        let person = getPerson(pid);
 
         // Add the parent's spouses as parents
         newPerson.value.parents = [pid];
-        getPerson(pid).spouses.forEach(spouseID => {
+        person.spouses.forEach(spouseID => {
             newPerson.value.parents.push(spouseID);
         });
+
+        // Add as child to parents
+        getPerson(newPerson.parents).forEach(parent => {
+            parent.children.push(person);
+        });
+
+        // Add primary parents
         newPerson.value.primaryParents.push(currentPID);
-        console.log(newPerson.value);
+
         addPerson(newPerson.value);
     };
     
@@ -484,8 +471,53 @@
         newPerson.value.spouses = [pid];
         getPerson(pid).spouses.forEach(spouseID => {
             newPerson.value.spouses.push(spouseID);
+            getPerson(spouseID).spouses.push(biggestPID+1);
         });
 
+        addPerson(newPerson.value);
+    };
+
+    // Add a parent to a person
+    const addParent = (pid) => {
+        // Check if PID exists
+        if (pid == null) {
+            pid = currentPID;
+        }
+        
+        // Get person
+        let person = getPerson(pid);
+
+        // Add person as child
+        newPerson.value.children.push(person.id);
+
+        // If person is the root person
+        if (person.primaryParents.length < 2) {
+            // Set primary parent
+            person.primaryParents.push(biggestPID+1);
+            
+        } else { // If person is a random primary parent (not root)
+            // Configure person parents
+            getPerson(person.parents).forEach(parent => {
+                // Remove old child from parents
+                parent.children.splice(parent.children.indexOf(person.id), 1);
+
+                // Add as child to parents
+                parent.children.push(biggestPID + 1);
+
+                // Add parent
+                newPerson.value.parents.push(parent.id);
+            });
+
+            // Add primary parents
+            newPerson.value.primaryParents.push(person.primaryParents[1]);
+            person.primaryParents[0] = -1;
+            person.primaryParents[1] = biggestPID + 1;
+        }
+
+        // Remove old parents from person
+        person.parents = [biggestPID + 1];
+
+        // Add to tree
         addPerson(newPerson.value);
     };
 
@@ -788,6 +820,11 @@
 
             <button class="select-new-person-button hover-up-p z-1" @click="addPersonFromType('spouse')">
                 <p>Spouse</p>
+                <div class="bg op-70 secondary"></div>
+            </button>
+
+            <button class="select-new-person-button hover-up-p z-1" @click="addPersonFromType('parent')">
+                <p>Parent</p>
                 <div class="bg op-70 secondary"></div>
             </button>
 
