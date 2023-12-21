@@ -63,6 +63,21 @@ input {
     border-radius: 5pt;
 }
 
+select {
+    background-color: $bg;
+    color: $text;
+
+    font-family: "Nunito", sans-serif;
+    font-size: 12pt;
+    font-weight: 300;
+
+    padding: 4pt;
+    border: none;
+    outline: none;
+    border-radius: 5pt;
+}
+
+
 ::placeholder {
     color: $text;
 }
@@ -329,4 +344,11 @@ nav > *:hover {
 .hover-up-p:hover p {
     transform: translateY(-2pt);
     transition: transform ease 0.8s;
+}
+
+// ---- Misc ----
+.prevent-select {
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
 }

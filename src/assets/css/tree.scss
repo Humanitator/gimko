@@ -324,8 +324,6 @@ article p {
     transition: transform ease 1s;
 }
 
-
-
 // ----- Edit prson info -------
 .edit-person-info-container {
     position: fixed;
@@ -333,16 +331,17 @@ article p {
 
     padding: 10pt 2%;
     
-    width: 70%;
-    height: 80%;
+    width: 90%;
+    height: 90%;
     
     top: 50%;
     left: 50%;
     transform: translateX(-200%) translateY(-50%);
 
-    z-index: 10;
+    z-index: 100;
 
     background-color: $secondary;
+    border: 2.6pt $primary solid;
     border-radius: 20pt;
 
     transition: transform ease 1s;

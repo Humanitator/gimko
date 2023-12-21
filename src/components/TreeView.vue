@@ -10,12 +10,15 @@
     const router = useRouter();
     const tid = router.currentRoute.value.params.id; // ID of current tree
 
+    const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+
     const tPersonMarginH = 20;
     const tPersonMarginV = 20;
     const tPersonWidth = 160;
     const tPersonHeight = 80; 
     const tPersonPaddingH = 20;
     const tPersonPaddingV = 20; 
+    let offsetX = ref(0); // The pan offset
 
     const ftreePoses = ref([]);
 
@@ -71,10 +74,12 @@
             await updateDoc(treeDoc, formattedTree)
             .then(() => {
                 console.log("Tree update success!");
+                showError("Saved Successfully!")
             })
             .catch(() => {
                 console.log("Tree update failed!");
                 alert("Tree save failed!")
+                showError("Save Failed!")
             });
         }
     }
@@ -208,7 +213,7 @@
         });
         calcTreeDepth();
         makeTree();
-
+        calcTreeWidth();
         closePersonInfo();
     };
 
@@ -259,7 +264,6 @@
                     }
 
                     // Align with parents
-                    // TODO: Align with second parents
                     newFTree[last] = [];
                     // NEW
                     i = 0;
@@ -271,6 +275,12 @@
                             while (familyIndex > -1) {
                                 familyIndex = families.findIndex(f => f[0].primaryParents[0] == -1 && f[0].primaryParents[1] == parent.id);
                                 if (familyIndex > -1) {
+                                    // Move primary to middle of family
+                                    const primPers = families[familyIndex][0];
+                                    families[familyIndex][0] = families[familyIndex][Math.floor((families[familyIndex].length) / 2) - 1];
+                                    families[familyIndex][Math.floor((families[familyIndex].length) / 2) - 1] = primPers;
+
+                                    // Add family to gen
                                     newFTree[last].push(...families[familyIndex]);
                                     families.splice(familyIndex, 1);
                                 }
@@ -279,34 +289,28 @@
                             while (familyIndex > -1) {
                                 familyIndex = families.findIndex(f => f[0].primaryParents[0] == parent.id);
                                 if (familyIndex > -1) {
+                                    // Move primary to middle of family
+                                    const primPers = families[familyIndex][0];
+                                    families[familyIndex][0] = families[familyIndex][Math.floor((families[familyIndex].length - 1) / 2)];
+                                    families[familyIndex][Math.floor((families[familyIndex].length - 1) / 2)] = primPers;
+
+                                    // Add family to gen
                                     newFTree[last].push(...families[familyIndex]);
                                     families.splice(familyIndex, 1);
                                 }
                             }
                         }
-
                         i++;
                     }
 
-                    // OLD
-                    // i = 0;
-                    // while (i < lastGen.length) { // Go through each "family head" (First person from family)
-                    //     if (lastGen[i].children.length > 0) {
-                    //         lastGen[i].children.forEach(child => {
-                    //             const family = getPerson(families.find(f => f.find(p => p == child)));
-                    //             newFTree[last].push(...family);
-                    //         });
-                    //     }
-                    //     i += lastGen[i].spouses.length + 1;
-                    // }
                 }
 
                 lastGen = newFTree[last];
             });
             ftree.value = newFTree;
         }
-        console.log(ftree.value);
-        console.log(tree.value);
+        // console.log(ftree.value);
+        // console.log(tree.value);
     };
 
     // Add a person to tree
@@ -355,8 +359,14 @@
 
                 // Set primary parents to adopted
                 child.primaryParents[0] = -1;
-                child.primaryParents[1] = primParent;
+                child.primaryParents[1] = primParent.id;
             });
+
+            // Add children to person's parent
+            primParent.children.push(...person.children);
+
+            // Remove person from parent
+            primParent.children.splice(primParent.children.indexOf(person.id), 1);
 
             // Move spouses up
             primParent.spouses.push(...person.spouses);
@@ -372,11 +382,6 @@
                 spouse.spouses.push(...person.spouses);
             });
 
-            // Add children to person's parent
-            primParent.children.push(...person.children);
-
-            // Remove person from parent
-            primParent.children.splice(parent.children.indexOf(person.id), 1);
         } else if (person.primaryParents.length > 0) { // If person is primary AND is at top of tree
             console.error("Can't remove first main person!");
             showError("Can't remove first main person!");
@@ -445,8 +450,8 @@
         });
 
         // Add as child to parents
-        getPerson(newPerson.parents).forEach(parent => {
-            parent.children.push(person);
+        getPerson(newPerson.value.parents).forEach(parent => {
+            parent.children.push(biggestPID + 1);
         });
 
         // Add primary parents
@@ -461,11 +466,11 @@
         if (pid == null) {
             pid = currentPID;
         }
+        // Get the person
+        let person = getPerson(pid);
+
         // Remove parents
         newPerson.value.primaryParents = [];
-        
-        // Add spuose's children as children
-        newPerson.value.children = [...getPerson(pid).children];
 
         // Add the spuose spuoses as spuoses
         newPerson.value.spouses = [pid];
@@ -473,6 +478,16 @@
             newPerson.value.spouses.push(spouseID);
             getPerson(spouseID).spouses.push(biggestPID+1);
         });
+
+        // Add spuose's children as children
+        newPerson.value.children = [...person.children];
+
+        // Add spouse as parent to children
+        getPerson(newPerson.value.children).forEach(child => {
+            child.parents.push(biggestPID + 1);
+        });
+
+        person.spouses.push(biggestPID + 1);
 
         addPerson(newPerson.value);
     };
@@ -497,6 +512,7 @@
             
         } else { // If person is a random primary parent (not root)
             // Configure person parents
+            newPerson.value.parents = [];
             getPerson(person.parents).forEach(parent => {
                 // Remove old child from parents
                 parent.children.splice(parent.children.indexOf(person.id), 1);
@@ -583,6 +599,24 @@
         return pos;
     }
 
+    let treeWidthPt = 0;
+    const calcTreeWidth = () => {
+        treeWidthPt = 0;
+        if (ftree.value) {
+            // Get longest gen
+            ftree.value.forEach(gen => {
+                if (gen.length > treeWidthPt) {
+                    treeWidthPt = gen.length;
+                }
+            });
+            treeWidthPt = (
+                (treeWidthPt - 1) * (tPersonWidth/2 + tPersonPaddingH + tPersonMarginH)
+                - (0)*(tPersonWidth + tPersonPaddingH*2 + tPersonMarginH*2) // Add block offset
+            );
+            console.log(treeWidthPt);
+        }
+    };
+
     // Get a position pair
     const getPersonPos = (pid) => {
         return ftreePoses.value.find(p => p.pid == pid);
@@ -618,6 +652,32 @@
         }
     };
 
+    let mouseDown = 0;
+    window.onmousedown = () => {
+        ++mouseDown;
+    }
+    window.onmouseup = () => {
+        --mouseDown;
+    }
+
+    let lastX;
+    const handleMouseMove = (event) => {
+        if (mouseDown) {
+            const x = event.screenX;
+
+            if (lastX) {
+                let dx = x - lastX;
+                offsetX.value += dx;
+                offsetX.value = clamp(offsetX.value, -treeWidthPt * 2, treeWidthPt * 2)
+                console.log(offsetX.value);
+            }
+
+            lastX = x;
+        } else {
+            lastX = null;
+        }
+    }
+
     onMounted(() => {
         document.title = "gimko | Tree view";
         checkAccess()
@@ -625,6 +685,8 @@
             getTree();
         }
     });
+
+    document.onmousemove = handleMouseMove;
 </script>
 
 <template>
@@ -634,7 +696,7 @@
     </div>
 
     <!-- Tree view -->
-    <div v-if="hasAccess && tree" style="position: relative;">
+    <div v-if="hasAccess && tree" class="prevent-select" style="position: relative;">
         <h1>{{ tree.name }}</h1>
 
         <!-- People -->
@@ -646,7 +708,7 @@
                     padding: tPersonPaddingV + 'pt ' + tPersonPaddingH + 'pt',
                     left: 'calc(50% - ' +
                         setPersonPosH(person.id, j, gen)
-                     + 'pt)',
+                     + 'pt + ' + offsetX + 'px)',
                     top: 'calc(' + setPersonPosV(person.id, i) + 'pt)',
                 }">
                     <h2 style="position: relative;" class="z-5" :class="(person.primaryParents.length > 0)?'t-bg':'t-text'">{{ person.name }}</h2>
@@ -769,6 +831,7 @@
                 <p>Date of birth: <input v-model="editedPerson.dob" type="date" /></p> <!-- Date of birth -->
                 <p>Is deceased? <input type="checkbox" v-model="editedPerson.isDeceased"></p> <!-- Is deceased -->
                 <p v-if="editedPerson.isDeceased">Date of death: <input v-model="editedPerson.dod" type="date" /></p> <!-- Date of death -->
+                <p v-if="editedPerson.parents[0] != null"><label for="parents">Select Second Parent:</label></p> <!-- Select second parent -->
                 <p v-if="editedPerson.parents[0] != null">
                     <select name="parents" id="parents" v-model="editedPerson.primaryParents[0]">
                         <option :value="-1">Adopted</option>
@@ -845,7 +908,7 @@
                 <p>Date of birth: <input v-model="newPerson.dob" type="date" /></p> <!-- Date of birth -->
                 <p>Is deceased? <input type="checkbox" v-model="newPerson.isDeceased"></p> <!-- Is deceased -->
                 <p v-if="newPerson.isDeceased">Date of death: <input v-model="newPerson.dod" type="date" /></p> <!-- Date of death -->
-                <p v-if="currentNewPersonType != 'spouse'"><label for="parents">Select Second Parent:</label></p> <!-- Select second parent -->
+                <p v-if="currentNewPersonType == 'child'"><label for="parents">Select Second Parent:</label></p> <!-- Select second parent -->
                 <p v-if="currentPID && currentNewPersonType == 'child'">
                     <select name="parents" id="parents" v-model="newPerson.primaryParents[0]">
                         <option :value="-1" :selected="true">Adopted</option>
