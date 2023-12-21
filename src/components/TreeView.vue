@@ -215,6 +215,7 @@
         makeTree();
         calcTreeWidth();
         closePersonInfo();
+
     };
 
     // Sort generation by spuoses
@@ -277,8 +278,8 @@
                                 if (familyIndex > -1) {
                                     // Move primary to middle of family
                                     const primPers = families[familyIndex][0];
-                                    families[familyIndex][0] = families[familyIndex][Math.floor((families[familyIndex].length) / 2) - 1];
-                                    families[familyIndex][Math.floor((families[familyIndex].length) / 2) - 1] = primPers;
+                                    families[familyIndex][0] = families[familyIndex][Math.floor((families[familyIndex].length - 1) / 2)];
+                                    families[familyIndex][Math.floor((families[familyIndex].length - 1) / 2)] = primPers;
 
                                     // Add family to gen
                                     newFTree[last].push(...families[familyIndex]);
@@ -613,7 +614,6 @@
                 (treeWidthPt - 1) * (tPersonWidth/2 + tPersonPaddingH + tPersonMarginH)
                 - (0)*(tPersonWidth + tPersonPaddingH*2 + tPersonMarginH*2) // Add block offset
             );
-            console.log(treeWidthPt);
         }
     };
 
@@ -669,7 +669,7 @@
                 let dx = x - lastX;
                 offsetX.value += dx;
                 offsetX.value = clamp(offsetX.value, -treeWidthPt * 2, treeWidthPt * 2)
-                console.log(offsetX.value);
+                // console.log(offsetX.value);
             }
 
             lastX = x;
@@ -696,13 +696,13 @@
     </div>
 
     <!-- Tree view -->
-    <div v-if="hasAccess && tree" class="prevent-select" style="position: relative;">
+    <div v-if="hasAccess && tree && ftree" class="prevent-select" style="position: relative;">
         <h1>{{ tree.name }}</h1>
 
         <!-- People -->
         <div class="people-tree" v-if="tree.people.length > 0">
             <div class="tree-gen" v-for="(gen, i) in ftree">
-                <div class="person" v-for="(person, j) in gen" v-bind:style="{
+                <div class="person" v-for="(person, j) in gen" :style="{
                     width: tPersonWidth + 'pt',
                     height: tPersonHeight + 'pt',
                     padding: tPersonPaddingV + 'pt ' + tPersonPaddingH + 'pt',

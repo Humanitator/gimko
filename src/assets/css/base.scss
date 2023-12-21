@@ -20,6 +20,7 @@ body {
 .page-content {
     margin: 0;
     padding-top: 50pt;
+    padding-bottom: 10pt;
     position: relative;
 }
 
@@ -208,6 +209,18 @@ nav > *:hover {
     letter-spacing: 5pt;
     background-color: $primary;
     transition: all 0.5s;
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100vw;
+
+    z-index: 100;
+
+    text-align: center;
+    background-color: $bg;
+    border-top: solid 2pt $primary;
 }
 
 // ---- scroll bar -----

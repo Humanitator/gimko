@@ -17,7 +17,7 @@
       } else {
         isLoggedIn.value = false;
       }
-      console.log(isLoggedIn.value);
+      // console.log("Is logged in? : " + isLoggedIn.value);
       gotAuth.value = true;
     });
   });
@@ -43,6 +43,10 @@
   <div class="page-content">
     <router-view/>
   </div>
+
+  <footer>
+    <p>© 2023 Andris Seļāvo</p>
+  </footer>
 </template>
 
 <style lang="scss">
