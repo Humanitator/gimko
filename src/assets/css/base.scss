@@ -214,13 +214,15 @@ nav > *:hover {
 footer {
     position: fixed;
     bottom: 0;
-    width: 100vw;
+    width: 20vw;
+    min-width: 150pt;
 
     z-index: 100;
 
     text-align: center;
     background-color: $bg;
     border-top: solid 2pt $primary;
+    border-right: solid 2pt $primary;
 }
 
 // ---- scroll bar -----
