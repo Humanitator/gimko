@@ -263,7 +263,7 @@
         <h2>Sveiks, {{ user.username }}!</h2>
         <!-- Search query results -->
         <div class="search-result-container" v-if="queryResults">
-            <h2>Meklēšanas Rezultāti:</h2>
+            <h2>Meklēšanas rezultāti:</h2>
             <div class="search-result" v-for="person in queryResults">
                 <h2>{{ person.data().username }}</h2>
 
@@ -313,7 +313,7 @@
 
         <!-- Search for a person -->
         <div class="username-query-container">
-            <h2>Meklēt Kādu</h2>
+            <h2>Meklēt kādu</h2>
             <p>Ievadi lietotājvārdu: <input v-model="usernameQuery" type="text" /></p>
             <button class="hover-up-p" @click="searchPerson()">
                 <p>Meklēt</p>
@@ -323,11 +323,11 @@
         </div>
 
         <!-- Person info -->
-        <div class="person-info" v-bind:class="(!selectedPerson)?'hidden-left--50':''">
+        <div class="person-info z-10" v-bind:class="(!selectedPerson)?'hidden-left--50':''">
             <h2 v-if="selectedPerson">{{ selectedPerson.username }}</h2>
             <!-- Add to tree -->
             <div class="add-to-tree" v-if="addToTreeDialogOpen && selectedPerson">
-                <h3 style="text-align: center;">Pievienot Kokam</h3>
+                <h3 style="text-align: center;">Pievienot kokam</h3>
                 <div class="tree-selector">
                     <div v-for="tree, i in userTrees" class="user-tree">
                         <p>{{ tree.name }}</p>
@@ -373,13 +373,13 @@
         <!-- Accept friend request -->
             <!-- Button -->
         <button class="requests-button hover-up-p" @click="() => requestDialogOpen = true" v-bind:class="(!requestDialogOpen)?'shown-0-0':''">
-            <p>Drauga Pieprasījumi</p>
+            <p>Drauga pieprasījumi</p>
             <div class="bg accent op-50"></div>
         </button>
             <!-- Dialog -->
         <div class="requests-container" v-bind:class="(requestDialogOpen)?'shown-0-0':''">
             <div class="friend-requests">
-                <h2>Ienākošie Pieprasījumi:</h2>
+                <h3>Ienākošie pieprasījumi:</h3>
                 <div v-for="personID, i in user.incomingFriendReq" v-if="incomingFriendReq.length > 0">
                     <div class="request">
                         <p>{{ incomingFriendReq[i].username }}
@@ -397,7 +397,7 @@
                 <p v-if="!user.incomingFriendReq || user.incomingFriendReq.length == 0">Nav ienākošu pieprasījumu...</p>
             </div>
             <div class="pending-requests">
-                <h2>Sūtītie Pieprasījumi:</h2>
+                <h3>Sūtītie pieprasījumi:</h3>
                 <div v-for="personID, i in user.sentFriendReq" v-if="sentFriendReq.length > 0">
                     <div class="request">
                         <p>{{ sentFriendReq[i].username }}
@@ -416,7 +416,7 @@
                 <div class="bg op-30"></div>
             </button>
 
-            <div class="bg"></div>
+            <div class="bg secondary op-40"></div>
         </div>
 
         <!-- Friends list -->
@@ -427,10 +427,10 @@
                     <h2>{{ friends[i].username }}</h2>
                     <button class="hover-up-p info" @click="loadPerson(friendID)">
                         <p>Info</p>
-                        <div class="bg"></div>
+                        <div class="bg op-50"></div>
                     </button>
-                    <button class="hover-up-p" @click="removeFriend(friendID)">
-                        <p>Noņemt Draugu</p>
+                    <button class="hover-up-p z-5" @click="removeFriend(friendID)">
+                        <p>Noņemt draugu</p>
                         <div class="bg red op-50"></div>
                     </button>
                     <div class="bg op-20"></div>

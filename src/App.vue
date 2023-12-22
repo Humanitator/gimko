@@ -38,7 +38,7 @@
     <router-link v-if="gotAuth && isLoggedIn" to="/tree">Koki</router-link>
     <router-link v-if="gotAuth && !isLoggedIn" to="/sign-in">Ieiet</router-link>
     <router-link v-if="gotAuth && !isLoggedIn" to="/register">Reģistrētes</router-link>
-    <button v-if="gotAuth && isLoggedIn" class="accent bold" @click="handleSignOut">Iziet</button>
+    <button v-if="gotAuth && isLoggedIn" class="accent bold t-bg" @click="handleSignOut">Iziet</button>
   </nav>
   <div class="page-content">
     <router-view/>
