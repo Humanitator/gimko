@@ -1,5 +1,5 @@
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 
 const routes = [
   { path: "/", component: () => import("../views/Home.vue")},
@@ -25,12 +25,13 @@ const routes = [
       requiresAuth: true,
     }
   },
-]
+];
 
 const router = createRouter({
+  // history: createWebHashHistory(process.env.BASE_URL), // Hash history
   history: createWebHistory(process.env.BASE_URL),
   routes
-})
+});
 
 const getCurrentUser = () => {
   return new Promise((resolve, reject) => {
@@ -50,7 +51,7 @@ router.beforeEach( async (to, from, next) => {
     if (await getCurrentUser()) {
       next();
     } else {
-      alert("You have to be signed in to access this page!");
+      alert("Jums vajag būt reģistrētam, lai apskatītu šo saiti!");
       next("/");
     }
   } else {
@@ -58,4 +59,4 @@ router.beforeEach( async (to, from, next) => {
   }
 });
 
-export default router
+export default router;
