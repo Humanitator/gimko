@@ -29,16 +29,16 @@
             console.log(error.code);
             switch (error.code) {
                 case "auth/invalidEmail":
-                    errorMsg.value = "invalid Email";
+                    errorMsg.value = "Nederīgs ē-pasts!";
                     break;
                 case "auth/user-not-found":
-                    errorMsg.value = "No account with that email was found";
+                    errorMsg.value = "Netika atrasts konts ar tādu ēpastu!";
                     break
                 case "auth/wrong-password":
-                    errorMsg.value = "Incorrect password";
+                    errorMsg.value = "Nepareiza parole!";
                     break;
                 default:
-                    errorMsg.value = "Email or password was incorrect";
+                    errorMsg.value = "Nepareizs ē-pasts vai parole.";
                     break;
             }
         });
@@ -68,26 +68,26 @@
     };
 
     onMounted(() => {
-        document.title = "gimko | Sign In";
+        document.title = "gimko | Ieiet";
     });
 </script>
 
 <template>
-    <h1>Sign In</h1>
+    <h1>Ieiet</h1>
     <article>
         <p><input type="text" placeholder="Email" v-model="email"/></p>
         <p><input type="password" placeholder="Password" v-model="password"/></p>
         <p v-if="errorMsg">{{ errorMsg }}</p>
         <p>
             <button class="hover-up-p"  @click="register">
-                <p>Submit</p>
+                <p>Iesniegt</p>
                 <div class="bg"></div>
             </button>
         </p>
     
         <p>
             <button class="hover-up-p" @click="signInWithGoogle">
-                <p> Sign in with Google</p>
+                <p> Pievienoties ar Google</p>
                 <div class="bg accent"></div>
             </button>
         </p>

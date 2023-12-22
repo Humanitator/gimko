@@ -18,13 +18,13 @@ export const defaultTree = {
 }
 
 export const defaultPersonArticle = {
-    title: "New article",
-    content: "Something about the person",
+    title: "Jauns raksts",
+    content: "Kaut kas par cilvēku",
 }
 
 // Default struct for person in tree
 export const defaultTreePerson = {
-    name: "New Person",
+    name: "Jauna persona",
     dob: '1920-01-02',
     dod: '1992-04-06',
     isDeceased: false,

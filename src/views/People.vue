@@ -230,7 +230,7 @@
 
     // When mounted
     onMounted(async () => {
-        document.title = "gimko | People"
+        document.title = "gimko | Cilvēki"
         await getUser();
         getFriendRequests();
         await getUserTrees();
@@ -240,7 +240,7 @@
 </script>
 
 <template>
-    <h1>People</h1>
+    <h1>Cilvēki</h1>
 
     <!-- Page placeholder while getting data -->
     <div v-if="!user">
@@ -249,7 +249,7 @@
         </div>
 
         <div class="friend-list-container">
-            <h2>Friends</h2>
+            <h2>Draugi</h2>
             <div class="friend-selector">
                 <div class="friend-button hover-up" v-for="i in Array(5).keys()">
                     <div class="bg op-20"></div>
@@ -260,17 +260,17 @@
 
     <!-- Page view -->
     <div v-if="user">
-        <h2>Hello, {{ user.username }}!</h2>
+        <h2>Sveiks, {{ user.username }}!</h2>
         <!-- Search query results -->
         <div class="search-result-container" v-if="queryResults">
-            <h2>Search results:</h2>
+            <h2>Meklēšanas Rezultāti:</h2>
             <div class="search-result" v-for="person in queryResults">
                 <h2>{{ person.data().username }}</h2>
 
                 <div class="search-result-buttons">
                     <!-- If self -->
                     <h2 v-if="person.id == auth.currentUser.uid">
-                        This is You!
+                        Šis esi Tu!
                     </h2>
                     <!-- Add friend / Send friend request -->
                     <button 
@@ -278,7 +278,7 @@
                         @click="sendFriendRequest(person.id)" 
                         v-if="!user.friends.includes(person.id) && !user.incomingFriendReq.includes(person.id) && !user.sentFriendReq.includes(person.id) && auth.currentUser.uid != person.id"
                     >
-                        <p>ADD FRIEND</p>
+                        <p>PIEVIENOT DRAUGU</p>
                         <div class="bg op-30"></div>
                     </button>
                     <!-- Accept friend request -->
@@ -287,7 +287,7 @@
                         @click="acceptFriendRequest(person.id)" 
                         v-if="user.incomingFriendReq.includes(person.id)"
                     >
-                        <p>ACCEPT FRIEND REQUEST</p>
+                        <p>PIEŅEMT DRAUGA PIEPRASĪJUMU</p>
                         <div class="bg op-30"></div>
                     </button>
                     <!-- Add to tree -->
@@ -301,7 +301,7 @@
                         }" 
                         v-if="user.friends.includes(person.id)"
                     >
-                        <p>ADD TO TREE</p>
+                        <p>PIEVIENOT KOKAM</p>
                         <div class="bg op-30"></div>
                     </button>
                     <div class="bg op-30"></div>
@@ -313,10 +313,10 @@
 
         <!-- Search for a person -->
         <div class="username-query-container">
-            <h2>Search for someone</h2>
-            <p>Enter a username: <input v-model="usernameQuery" type="text" /></p>
+            <h2>Meklēt Kādu</h2>
+            <p>Ievadi lietotājvārdu: <input v-model="usernameQuery" type="text" /></p>
             <button class="hover-up-p" @click="searchPerson()">
-                <p>Search</p>
+                <p>Meklēt</p>
                 <div class="bg accent"></div>
             </button>
             <div class="bg"></div>
@@ -327,7 +327,7 @@
             <h2 v-if="selectedPerson">{{ selectedPerson.username }}</h2>
             <!-- Add to tree -->
             <div class="add-to-tree" v-if="addToTreeDialogOpen && selectedPerson">
-                <h3 style="text-align: center;">Add to tree</h3>
+                <h3 style="text-align: center;">Pievienot Kokam</h3>
                 <div class="tree-selector">
                     <div v-for="tree, i in userTrees" class="user-tree">
                         <p>{{ tree.name }}</p>
@@ -338,7 +338,7 @@
                                 @click="addToTree(selectedPersonID, user.trees[i])"
                                 v-if="!selectedPerson.trees.includes(user.trees[i])"
                                 >
-                                <p>ADD</p>
+                                <p>PIEVIENOT</p>
                                 <div class="bg op-30"></div>
                             </button>
                             <button
@@ -346,7 +346,7 @@
                                 @click="removeFromTree(selectedPersonID, user.trees[i])"
                                 v-if="selectedPersonID == tree.ownerID && selectedPerson.trees.includes(user.trees[i])"
                                 >
-                                <p>REMOVE</p>
+                                <p>NOŅEMT</p>
                                 <div class="bg op-30"></div>
                             </button>
                         </p>
@@ -360,12 +360,12 @@
             </div>
             <!-- Add to tree button -->
             <button class="hover-up-p" v-if="!addToTreeDialogOpen" @click="() => addToTreeDialogOpen = true">
-                <p>Add To Tree</p>
+                <p>Pievienot Kokam</p>
                 <div class="bg"></div>
             </button>
 
             <button class="close-button hover-up-p" @click="closeDialogs()">
-                <p>Close</p>
+                <p>Aizvērt</p>
                 <div class="bg op-20"></div>
             </button>
         </div>
@@ -373,46 +373,46 @@
         <!-- Accept friend request -->
             <!-- Button -->
         <button class="requests-button hover-up-p" @click="() => requestDialogOpen = true" v-bind:class="(!requestDialogOpen)?'shown-0-0':''">
-            <p>Friend requests</p>
+            <p>Drauga Pieprasījumi</p>
             <div class="bg accent op-50"></div>
         </button>
             <!-- Dialog -->
         <div class="requests-container" v-bind:class="(requestDialogOpen)?'shown-0-0':''">
             <div class="friend-requests">
-                <h2>Incoming requests:</h2>
+                <h2>Ienākošie Pieprasījumi:</h2>
                 <div v-for="personID, i in user.incomingFriendReq" v-if="incomingFriendReq.length > 0">
                     <div class="request">
                         <p>{{ incomingFriendReq[i].username }}
                             <button class="hover-up-p" @click="denyFriendRequest(personID)">
-                                <p>X</p>
+                                <p>Noraidīt</p>
                                 <div class="bg"></div>
                             </button>
                             <button class="hover-up-p" @click="acceptFriendRequest(personID)">
-                                <p>Y</p>
+                                <p>Pieņemt</p>
                                 <div class="bg"></div>
                             </button>
                         </p>
                     </div>
                 </div>
-                <p v-if="!user.incomingFriendReq || user.incomingFriendReq.length == 0">No incoming requests...</p>
+                <p v-if="!user.incomingFriendReq || user.incomingFriendReq.length == 0">Nav ienākošu pieprasījumu...</p>
             </div>
             <div class="pending-requests">
-                <h2>Sent requests:</h2>
+                <h2>Sūtītie Pieprasījumi:</h2>
                 <div v-for="personID, i in user.sentFriendReq" v-if="sentFriendReq.length > 0">
                     <div class="request">
                         <p>{{ sentFriendReq[i].username }}
                             <button class="hover-up-p" @click="cancelFriendRequest(personID)">
-                                <p>Cancel</p>
+                                <p>Atcelt</p>
                                 <div class="bg"></div>
                             </button>
                         </p>
                     </div>
                 </div>
-                <p v-if="!user.sentFriendReq || user.sentFriendReq.length == 0"> No sent requests...</p>
+                <p v-if="!user.sentFriendReq || user.sentFriendReq.length == 0"> Nav sūtītu pieprasījumu...</p>
             </div>
 
             <button class="close-button z-10 hover-up-p" @click="closeDialogs()">
-                <p>Close</p>
+                <p>Aizvērt</p>
                 <div class="bg op-30"></div>
             </button>
 
@@ -421,7 +421,7 @@
 
         <!-- Friends list -->
         <div class="friend-list-container">
-            <h1>Friends</h1>
+            <h1>Draugi</h1>
             <div class="friend-selector" v-if="friends.length > 0">
                 <div class="friend-panel" v-for="friendID, i in user.friends">
                     <h2>{{ friends[i].username }}</h2>
@@ -430,7 +430,7 @@
                         <div class="bg"></div>
                     </button>
                     <button class="hover-up-p" @click="removeFriend(friendID)">
-                        <p>Remove Friend</p>
+                        <p>Noņemt Draugu</p>
                         <div class="bg red op-50"></div>
                     </button>
                     <div class="bg op-20"></div>
@@ -440,7 +440,7 @@
             <!-- If friends is empty -->
             <div v-if="user.friends.length == 0">
                 <img class="lonely" src="../assets/img/lonely_1280x853.jpg">
-                <p>Lonely...</p>
+                <p>Vientuļi...</p>
             </div>
         </div>
     </div>

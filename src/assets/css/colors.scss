@@ -12,6 +12,8 @@ $primary: #77d21c;
 $secondary: #084908;
 $accent: #f2f22b;
 
+$red: #c54120;
+
 $primarycontrast: #ff8f8f;
 $secondarycontrast: #64d97b;
 $accentcontrast: #64d97b;
@@ -38,7 +40,7 @@ $bgcontrast: #ffdd00;
 }
 
 .red {
-    background-color: red !important;
+    background-color: $red !important;
 }
 
 // ---- Text Presets ----
@@ -63,7 +65,12 @@ $bgcontrast: #ffdd00;
 }
 
 .t-red {
-    color: red !important;
+    color: $red !important;
+}
+
+// ---- Text styles ----
+.bold {
+    font-weight: bold;
 }
 
 // ---- z-indexes ------

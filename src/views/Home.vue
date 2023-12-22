@@ -3,7 +3,7 @@
 
 
   onMounted(() => {
-    document.title = "gimko | Home";
+    document.title = "gimko | Sākums";
   });
 </script>
 
@@ -11,19 +11,19 @@
   <div class="main-container">
     <div class="title-container">
       <h1>
-        See How Grand is Your Family!
+        Redzi, cik liela ir tava ģimene!
       </h1>
     </div>
     <div class="article-small">
-      <h4>Gimko allows you to document your whole family tree and see how rich it really is!</h4>
+      <h4>Gimko ļauj tev dokumentēt visu savu ģimenes koku un redzēt tā vērtību!</h4>
       <div class="bg op-30"></div>
     </div>
     <div class="article-small" style="float: right;">
-      <h4>Share your family tree with other people!</h4>
+      <h4>Dalies ar savu ģimenes koku ar citiem cilvēkiem!</h4>
       <div class="bg op-30"></div>
     </div>
     <!-- <button class="hover-up-p" style="">
-      <h3>Get started!</h3>
+      <h3>Sākt!</h3>
       <div class="bg"></div>
     </button> -->
   </div>

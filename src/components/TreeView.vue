@@ -26,9 +26,12 @@
     let currentPID;
     let biggestPID;
 
+    let auth = getAuth();
+
     // Get current tree
     let tree = ref();
     const getTree =  async () => {
+        console.log("Getting Tree");
         const treeDoc = await getDoc(doc(db, "trees", tid));
         if (treeDoc.exists()) {
             console.log("Tree found!");
@@ -74,12 +77,11 @@
             await updateDoc(treeDoc, formattedTree)
             .then(() => {
                 console.log("Tree update success!");
-                showError("Saved Successfully!")
+                showError("Saglabāts sekmīgi!")
             })
             .catch(() => {
                 console.log("Tree update failed!");
-                alert("Tree save failed!")
-                showError("Save Failed!")
+                showError("Neizdevās saglabāt!")
             });
         }
     }
@@ -385,7 +387,7 @@
 
         } else if (person.primaryParents.length > 0) { // If person is primary AND is at top of tree
             console.error("Can't remove first main person!");
-            showError("Can't remove first main person!");
+            showError("Nevar dzēst pirmo koka personu!");
             return false;
 
         } else { // If person is a spouse (isn't primary)
@@ -635,7 +637,6 @@
     // Check if user has access to tree
     let hasAccess = ref(false);
     const checkAccess = async () => {
-        const auth = getAuth();
         const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
         if (userDoc.exists()) {
             console.log("User found!");
@@ -644,7 +645,7 @@
                 console.log("Access granted!");  
             } else {
                 console.log("User doesn't have access!");
-                alert("You don't have access to view this tree!");
+                alert("Jums nav piekļuves šajam kokam!");
                 router.push("/tree")
             }
         } else {
@@ -678,10 +679,10 @@
         }
     }
 
-    onMounted(() => {
-        document.title = "gimko | Tree view";
-        checkAccess()
-        if (hasAccess) {
+    onMounted(async () => {
+        document.title = "gimko | Koka skats";
+        await checkAccess();
+        if (hasAccess.value) {
             getTree();
         }
     });
@@ -692,7 +693,7 @@
 <template>
     <!-- Checking access -->
     <div v-if="!hasAccess">
-        <h1>Checking access...</h1>
+        <h1>Pārbauda piekļuves atļauju...</h1>
     </div>
 
     <!-- Tree view -->
@@ -720,12 +721,12 @@
                         </button>
                         <!-- Add (Only for primary) -->
                         <button v-if="person.primaryParents.length > 0" class="hover-up-p" @click="selectNewPersonType(person.id)"> 
-                            <p>ADD</p>
+                            <p>PIEVIENOT</p>
                             <div class="bg secondary op-50"></div>
                         </button>
                         <!-- Remove person -->
                         <button class="hover-up-p" @click="() => removePID = person.id">
-                            <p>REMOVE</p>
+                            <p>DZĒST</p>
                             <div class="bg red op-80"></div>
                         </button>
                     </div>
@@ -812,29 +813,29 @@
             </div>
 
             <button class="edit-button hover-up-p" @click="editPerson(selectedPerson.id)">
-                <p>EDIT</p>
+                <p>REDIĢĒT</p>
                 <div class="bg accent op-30"></div>
             </button>
 
             <button class="exit-button hover-up-p" @click="closePersonInfo()">
-                <p>CLOSE</p>
+                <p>AIZVĒRT</p>
                 <div class="bg"></div>
             </button>
         </div>
 
         <!-- Edit person info -->
         <div class="edit-person-info-container" v-bind:class="(editingPerson)?'shown':''">
-            <h2>Edit person info</h2>
+            <h2>Rediģēt personas info</h2>
             <!-- Add form -->
             <div class="add-person-form" v-if="editedPerson">
-                <p>Name: <input v-model="editedPerson.name" type="text" /></p> <!-- Name -->
-                <p>Date of birth: <input v-model="editedPerson.dob" type="date" /></p> <!-- Date of birth -->
-                <p>Is deceased? <input type="checkbox" v-model="editedPerson.isDeceased"></p> <!-- Is deceased -->
-                <p v-if="editedPerson.isDeceased">Date of death: <input v-model="editedPerson.dod" type="date" /></p> <!-- Date of death -->
-                <p v-if="editedPerson.parents[0] != null"><label for="parents">Select Second Parent:</label></p> <!-- Select second parent -->
+                <p>Vārds: <input v-model="editedPerson.name" type="text" /></p> <!-- Name -->
+                <p>Dzimšanas Datums: <input v-model="editedPerson.dob" type="date" /></p> <!-- Date of birth -->
+                <p>Vai ir Miris? <input type="checkbox" v-model="editedPerson.isDeceased"></p> <!-- Is deceased -->
+                <p v-if="editedPerson.isDeceased">Miršanas Datums: <input v-model="editedPerson.dod" type="date" /></p> <!-- Date of death -->
+                <p v-if="editedPerson.parents[0] != null"><label for="parents">Izvēlieties Otru Vecāku:</label></p> <!-- Select second parent -->
                 <p v-if="editedPerson.parents[0] != null">
                     <select name="parents" id="parents" v-model="editedPerson.primaryParents[0]">
-                        <option :value="-1">Adopted</option>
+                        <option :value="-1">Adoptēts</option>
                         <option v-for="parentID in getPerson(editedPerson.primaryParents[1]).spouses" :value="parentID" :selected="editedPerson.primaryParents[0] == parentID">
                             {{ getPerson(parentID).name }}
                         </option>
@@ -842,32 +843,32 @@
                 </p>
 
                 <!-- Articles -->
-                <h4>Articles:</h4>
+                <h4>Raksti:</h4>
                 <div v-for="article, i in editedPerson.articles">
-                    <p>Title: <input v-model="article.title" type="text" /></p>
+                    <p>Virsraksts: <input v-model="article.title" type="text" /></p>
                     <p><textarea class="desc" v-model="article.content"></textarea></p>
                     <button class="hover-up-p" style="margin: 3pt 0;" @click="removeArticle(editedPerson, i)">
-                        <p>Remove article</p>
+                        <p>Noņemt Rakstu</p>
                         <div class="bg red op-30"></div>
                     </button>
                 </div>
                 
                 <!-- Add article -->
                 <button class="hover-up-p" style="margin: 4pt 0;" @click="addArticle(editedPerson)">
-                    <p>Add article</p>
+                    <p>Pievienot Rakstu</p>
                     <div class="bg"></div>
                 </button>
 
                 <!-- Confirm -->
                 <button class="hover-up-p" style="float: inline-end;" @click="confirmEdit()">
-                    <p>Confirm</p>
+                    <p>Saglabāt</p>
                     <div class="bg op-40"></div>
                 </button>
             </div>
 
             <!-- Exit -->
             <button class="exit-button hover-up-p pos-right-inline" @click="closePersonInfo()">
-                <p>Close</p>
+                <p>Aizvērt</p>
                 <div class="bg accent"></div>
             </button>
         </div>
@@ -877,22 +878,22 @@
             <h4 style="text-align: center;">Select person type</h4>
 
             <button class="select-new-person-button hover-up-p z-1" @click="addPersonFromType('child')">
-                <p>Child</p>
+                <p>Bērns</p>
                 <div class="bg op-70 secondary"></div>
             </button>
 
             <button class="select-new-person-button hover-up-p z-1" @click="addPersonFromType('spouse')">
-                <p>Spouse</p>
+                <p>Dzīvesbiedrs</p>
                 <div class="bg op-70 secondary"></div>
             </button>
 
             <button class="select-new-person-button hover-up-p z-1" @click="addPersonFromType('parent')">
-                <p>Parent</p>
+                <p>Vecāks</p>
                 <div class="bg op-70 secondary"></div>
             </button>
 
             <button class="exit-button hover-up-p z-1" @click="closePersonInfo()">
-                <p>Close</p>
+                <p>Aizvērt</p>
                 <div class="bg op-80 secondary"></div>
             </button>
 
@@ -901,17 +902,17 @@
 
         <!-- Add person from type -->
         <div class="add-person-from-type-container" v-bind:class="(currentNewPersonType != '')?'shown':''">
-            <h2>Add a {{ currentNewPersonType }}</h2>
+            <h2>Pievienot {{ currentNewPersonType }}</h2>
             <!-- Add form -->
             <div class="add-person-form">
-                <p>Name: <input v-model="newPerson.name" type="text" /></p> <!-- Name -->
-                <p>Date of birth: <input v-model="newPerson.dob" type="date" /></p> <!-- Date of birth -->
-                <p>Is deceased? <input type="checkbox" v-model="newPerson.isDeceased"></p> <!-- Is deceased -->
-                <p v-if="newPerson.isDeceased">Date of death: <input v-model="newPerson.dod" type="date" /></p> <!-- Date of death -->
-                <p v-if="currentNewPersonType == 'child'"><label for="parents">Select Second Parent:</label></p> <!-- Select second parent -->
+                <p>Vārds: <input v-model="newPerson.name" type="text" /></p> <!-- Name -->
+                <p>Dzimšanas Datums: <input v-model="newPerson.dob" type="date" /></p> <!-- Date of birth -->
+                <p>Vai ir Miris? <input type="checkbox" v-model="newPerson.isDeceased"></p> <!-- Is deceased -->
+                <p v-if="newPerson.isDeceased">Miršanas Datums: <input v-model="newPerson.dod" type="date" /></p> <!-- Date of death -->
+                <p v-if="currentNewPersonType == 'child'"><label for="parents">Izvēlieties Otru Vecāku:</label></p> <!-- Select second parent -->
                 <p v-if="currentPID && currentNewPersonType == 'child'">
                     <select name="parents" id="parents" v-model="newPerson.primaryParents[0]">
-                        <option :value="-1" :selected="true">Adopted</option>
+                        <option :value="-1" :selected="true">Adoptēts</option>
                         <option v-for="parentID in getPerson(currentPID).spouses" :value="parentID">
                             {{ getPerson(parentID).name }}
                         </option>
@@ -919,54 +920,54 @@
                 </p>
 
                 <!-- Articles -->
-                <h3>Articles:</h3>
+                <h3>Raksti:</h3>
                 <div v-for="article, i in newPerson.articles">
-                    <p>Title: <input v-model="article.title" type="text" /></p>
+                    <p>Virsraksts: <input v-model="article.title" type="text" /></p>
                     <p><textarea class="desc" v-model="article.content"></textarea></p>
                     <button class="hover-up-p" style="margin: 3pt 0;" @click="removeArticle(newPerson, i)">
-                        <p>Remove article</p>
+                        <p>Noņemt Rakstu</p>
                         <div class="bg red op-30"></div>
                     </button>
                 </div>
 
                 <!-- Add article -->
                 <button class="hover-up-p" style="margin: 4pt 0;" @click="addArticle(newPerson)">
-                    <p>Add article</p>
+                    <p>Pievienot Rakstu</p>
                     <div class="bg"></div>
                 </button>
 
                 <button class="hover-up-p" style="float: inline-end;" @click="(currentNewPersonType == 'child')?addChild():((currentNewPersonType == 'parent')?addParent():addSpouse())">
-                    <p>ADD</p>
+                    <p>PIEVIENOT</p>
                     <div class="bg op-40"></div>
                 </button>
             </div>
 
             <!-- Exit -->
             <button class="exit-button hover-up-p pos-right-inline" @click="closePersonInfo()">
-                <p>Close</p>
+                <p>Aizvērt</p>
                 <div class="bg accent"></div>
             </button>
         </div>
 
         <!-- UPDATE TREE -->
         <button class="exit-button hover-up-p" v-if="tree.people.length != 0" @click="updateTree()">
-            <p>Save Tree</p>
+            <p>Saglabāt Koku</p>
             <div class="bg accent"></div>
         </button>
 
         <!-- Confirm person removal -->
         <div class="confirm-person-remove" v-bind:class="(removePID)?'shown-0-0':''">
-            <h2>Are you sure?</h2>
+            <h2>Vai Jūs Esat Drošs?</h2>
             <button v-if="removePID" class="hover-up-p" @click="closePersonInfo()">
-                <p>No</p>
+                <p>Nē</p>
                 <div class="bg secondary op-80 z--3"></div>
             </button>
             <button v-if="removePID" class="hover-up-p" @click="removePerson(removePID)">
-                <p>Yes</p>
+                <p>Jā</p>
                 <div class="bg red op-80 z--3"></div>
             </button>
             <button v-if="removePID" class="hover-up-p" @click="closePersonInfo()">
-                <p>No</p>
+                <p>Nē</p>
                 <div class="bg secondary op-80 z--3"></div>
             </button>
             <div class="bg op-30 z--5"></div>
@@ -981,12 +982,13 @@
         <!--  IF NO PERSON EXISTS -->
         <!-- Add new person form -->
         <div class="add-person-container" v-if="tree.people.length == 0">
-            <h2>Add a person</h2>
-            <p>Name: <input type="text" v-model="newPerson.name"></p>
-            <p>Date of birth: <input type="date" v-model="newPerson.dob"></p>
-            <p>Date of death: <input type="date" v-model="newPerson.dod"></p>
+            <h2>Pievienot Personu</h2>
+            <p>Vārds: <input type="text" v-model="newPerson.name"></p>
+            <p>Dzimšanas Datums: <input type="date" v-model="newPerson.dob"></p>
+            <p>Vai ir Miris? <input type="checkbox" v-model="newPerson.isDeceased"></p> <!-- Is deceased -->
+            <p v-if="newPerson.isDeceased">Miršanas Datums: <input type="date" v-model="newPerson.dod"></p>
             <button class="hover-up-p" @click="addPerson(newPerson)">
-                <p>Create person</p>
+                <p>Izveidot Personu</p>
             </button>
 
             <div class="bg"></div>

@@ -23,18 +23,18 @@ import { async } from '@firebase/util';
         // Check if username is valid
         const regexPattern = /^[a-zA-Z0-9]+$/; // Allows only letters and numbers
 
-        if (username.value.length < 3 || username.value.length > 16) {
-            errorMsg.value = "Username must be between 3 and 16 charachters long!";
+        if (username.value.length < 3 || username.value.length >= 16) {
+            errorMsg.value = "Lietotājvārdam jābūt no 3 līdz 16 burtu garam!";
             return false;
         } else if (!regexPattern.test(username.value)) {
-            errorMsg.value = "Username must only include letters or numbers!";
+            errorMsg.value = "Lietotājvārdam jāsastāv tikai no burtiem un cipariem!";
             return false;
         }
 
         // Check if username exists
         const existingUser = await getDoc(doc(db, "users", username.value));
         if (existingUser.exists()) {
-            errorMsg.value = "Username already is in use!"
+            errorMsg.value = "Lietotājvārds jau ir aizņemts!"
             return false;
         }
 
@@ -78,22 +78,22 @@ import { async } from '@firebase/util';
                 console.log(error.code);
                 switch (error.code) {
                     case "auth/invalid-email":
-                        errorMsg.value = "Invalid Email";
+                        errorMsg.value = "Nederīgs ē-pasts!";
                         break;
                     case "auth/user-not-found":
-                        errorMsg.value = "No account with that email was found";
+                        errorMsg.value = "Netika atrasts konts ar tādu ēpastu!";
                         break
                     case "auth/wrong-password":
-                        errorMsg.value = "Incorrect password";
+                        errorMsg.value = "Nepareiza parole!";
                         break;
                     case "auth/missing-password":
-                        errorMsg.value = "Missing password";
+                        errorMsg.value = "Nav paroles!";
                         break
                     case "auth/email-already-in-use":
-                        errorMsg.value = "Email is already in use";
+                        errorMsg.value = "Ēpasts jau tiek lietots!";
                         break;
                     default:
-                        errorMsg.value = "Something went wrong, try changing the password or email.";
+                        errorMsg.value = "Kaut kas nogāja greizi. Mēģiniet nomainīt ē-pastu vai paroli.";
                         break;
                 }
             });
@@ -139,12 +139,12 @@ import { async } from '@firebase/util';
     };
 
     onMounted(() => {
-        document.title = "gimko | Register";
+        document.title = "gimko | Reģistrēties";
     });
 </script>
 
 <template>
-    <h1>Create an account</h1>
+    <h1>Izveidot Kontu</h1>
 
     <article>
         <p><input type="text" placeholder="Username" v-model="username"/></p>
@@ -153,14 +153,14 @@ import { async } from '@firebase/util';
         <p v-if="errorMsg">{{ errorMsg }}</p>
         <p v-if="!registering">
             <button class="hover-up-p" @click="register">
-                <p>Submit</p>
+                <p>Iesniegt</p>
                 <div class="bg"></div>
             </button>
         </p>
 
         <p v-if="!registering">
             <button class="hover-up-p" @click="signInWithGoogle">
-                <p>Sign in with Google</p>
+                <p>Pievienoties ar Google</p>
                 <div class="bg accent"></div>
             </button>
         </p>

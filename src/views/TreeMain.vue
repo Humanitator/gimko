@@ -40,12 +40,12 @@
 
     // Create a new tree
     const creatingTree = ref(false);
-    const newTreeName = ref("New tree");
+    const newTreeName = ref("Jauns koks");
     const createTree = async () => {
         const auth = getAuth();
         creatingTree.value = true;
         if (newTreeName.value === "") {
-            newTreeName.value = "New tree";
+            newTreeName.value = "Jauns koks";
         }
 
         const treeColRef = collection(db, 'trees');
@@ -53,7 +53,7 @@
         const q = query(treeColRef, where('name', '==', newTreeName.value));
         const treeDocs = await getDocs(q);
         if (!treeDocs.empty) {
-            alert("Tree already exists!");
+            alert("Šāds koks jau pastāv!");
             return;
         }
 
@@ -85,13 +85,13 @@
     };
 
     onMounted(() => {
-        document.title = "gimko | Trees";
+        document.title = "gimko | Koki";
         getTrees();
     });
 </script>
 
 <template>
-    <h1>Trees</h1>
+    <h1>Koki</h1>
 
     <!-- Render placeholders while retrieving data from firebase -->
     <div v-if="treeDocs.length != treeCount">
@@ -123,12 +123,12 @@
         </div>
     
         <div class="new-tree-container">
-            <h2>Make a new tree</h2>
-            <p>Name:</p>
+            <h2>Izveidot Jaunu Koku</h2>
+            <p>Nosaukums:</p>
             <p><input type="text" v-model="newTreeName" placeholder="New tree"></p>
     
             <button v-if="!creatingTree" class="hover-up-p" @click="createTree()">
-                <p>Create tree</p>
+                <p>Izveidot Koku</p>
             </button>
 
             <div class="bg"></div>

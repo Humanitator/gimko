@@ -33,12 +33,12 @@
 
 <template>
   <nav>
-    <router-link to="/" style="flex-basis: 2;">Home</router-link>
-    <router-link to="/people">People</router-link>
-    <router-link v-if="gotAuth && isLoggedIn" to="/tree">Tree</router-link>
-    <router-link v-if="gotAuth && !isLoggedIn" to="/sign-in">Sign in</router-link>
-    <router-link v-if="gotAuth && !isLoggedIn" to="/register">Register</router-link>
-    <button v-if="gotAuth && isLoggedIn" @click="handleSignOut">Sign Out</button>
+    <router-link to="/" style="flex-basis: 2;">Sākums</router-link>
+    <router-link to="/people">Cilvēki</router-link>
+    <router-link v-if="gotAuth && isLoggedIn" to="/tree">Koki</router-link>
+    <router-link v-if="gotAuth && !isLoggedIn" to="/sign-in">Ieiet</router-link>
+    <router-link v-if="gotAuth && !isLoggedIn" to="/register">Reģistrētes</router-link>
+    <button v-if="gotAuth && isLoggedIn" class="accent bold" @click="handleSignOut">Iziet</button>
   </nav>
   <div class="page-content">
     <router-view/>
