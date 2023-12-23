@@ -920,7 +920,7 @@
             <div class="add-person-form">
                 <p>Vārds: <input v-model="newPerson.name" type="text" /></p> <!-- Name -->
                 <p>Dzimšanas datums: <input v-model="newPerson.dob" type="date" /></p> <!-- Date of birth -->
-                <p>Vai ir miris? <input type="checkbox" v-model="newPerson.isDeceased"></p> <!-- Is deceased -->
+                <p>Vai ir miris? <div class="checkbox"><input type="checkbox" v-model="newPerson.isDeceased"></div></p> <!-- Is deceased -->
                 <p v-if="newPerson.isDeceased">Miršanas datums: <input v-model="newPerson.dod" type="date" /></p> <!-- Date of death -->
                 <p v-if="currentNewPersonType == 'child'"><label for="parents">Izvēlieties otru vecāku:</label></p> <!-- Select second parent -->
                 <p v-if="currentPID && currentNewPersonType == 'child'">
@@ -969,7 +969,7 @@
         </button>
 
         <!-- Confirm person removal -->
-        <div class="confirm-person-remove" v-bind:class="(removePID)?'shown-0-0':''">
+        <div class="confirm-person-remove" v-bind:class="(removePID)?'shown-0--50':''">
             <h2>Vai jūs esat drošs?</h2>
             <button v-if="removePID" class="hover-up-p" @click="closePersonInfo()">
                 <p>Nē</p>
@@ -998,7 +998,7 @@
             <h2>Pievienot personu</h2>
             <p>Vārds: <input type="text" v-model="newPerson.name"></p>
             <p>Dzimšanas datums: <input type="date" v-model="newPerson.dob"></p>
-            <p>Vai ir miris? <input type="checkbox" v-model="newPerson.isDeceased"></p> <!-- Is deceased -->
+            <p>Vai ir miris? <div class="checkbox"><input type="checkbox" v-model="newPerson.isDeceased"></div></p> <!-- Is deceased -->
             <p v-if="newPerson.isDeceased">Miršanas datums: <input type="date" v-model="newPerson.dod"></p>
             <button class="hover-up-p" @click="addPerson(newPerson)">
                 <p>Izveidot personu</p>

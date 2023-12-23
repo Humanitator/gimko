@@ -64,6 +64,14 @@ input {
     border-radius: 5pt;
 }
 
+input[type=checkbox] {
+    width: 12pt;
+    height: 12pt;
+    background-color: $secondary;
+
+    border-radius: 0;
+}
+
 select {
     background-color: $bg;
     color: $text;
