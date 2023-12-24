@@ -34,19 +34,8 @@ $accent: #f2f22b;
 // ---- Article ----
 .article-small {
     position: relative;
-    margin: 10pt 2%;
-    padding: 0 2%;
-    width: 46%;
-    min-height: 100pt;
-}
-
-.article-small h4 {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translateY(-50%) translateX(-50%);
-
-    width: 90%;
-
     text-align: center;
+    margin: 10pt 2%;
+    padding: 5pt 2%;
+    width: 46%;
 }

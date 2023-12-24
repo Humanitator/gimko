@@ -14,14 +14,14 @@
         Redzi, cik liela ir tava ģimene!
       </h1>
     </div>
-    <div class="article-small">
-      <h4>Gimko ļauj tev dokumentēt visu savu ģimenes koku un redzēt tā vērtību!</h4>
+    <h4 class="article-small">
+      Gimko ļauj tev dokumentēt visu savu ģimenes koku un redzēt tā vērtību! 
       <div class="bg op-30"></div>
-    </div>
-    <div class="article-small" style="float: right;">
-      <h4>Dalies ar savu ģimenes koku ar citiem cilvēkiem!</h4>
+    </h4>
+    <h4 class="article-small" style="float: right;">
+      Dalies ar savu ģimenes koku ar citiem cilvēkiem!
       <div class="bg op-30"></div>
-    </div>
+    </h4>
     <!-- <button class="hover-up-p" style="">
       <h3>Sākt!</h3>
       <div class="bg"></div>
