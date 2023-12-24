@@ -147,9 +147,9 @@ import { async } from '@firebase/util';
     <h1>Izveidot Kontu</h1>
 
     <article>
-        <p><input type="text" placeholder="Username" v-model="username"/></p>
-        <p><input type="text" placeholder="Email" v-model="email"/></p>
-        <p><input type="password" placeholder="Password" v-model="password"/></p>
+        <p><input type="text" placeholder="Lietotājvārds" v-model="username"/></p>
+        <p><input type="text" placeholder="Ē-pasts" v-model="email"/></p>
+        <p><input type="password" placeholder="Parole" v-model="password"/></p>
         <p v-if="errorMsg">{{ errorMsg }}</p>
         <p v-if="!registering">
             <button class="hover-up-p" @click="register">
