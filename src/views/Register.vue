@@ -9,7 +9,8 @@
     } from "firebase/auth";
     import { doc, collection, addDoc, setDoc, getDoc} from "firebase/firestore"
     import { useRouter } from 'vue-router';
-import { async } from '@firebase/util';
+    import { async } from '@firebase/util';
+    import { defaultUser } from '@/firebase/defaultStructs';
 
     const username = ref("");
     const email = ref("");
@@ -25,9 +26,11 @@ import { async } from '@firebase/util';
 
         if (username.value.length < 3 || username.value.length >= 16) {
             errorMsg.value = "Lietotājvārdam jābūt no 3 līdz 16 burtu garam!";
+            registering.value = false;
             return false;
         } else if (!regexPattern.test(username.value)) {
             errorMsg.value = "Lietotājvārdam jāsastāv tikai no burtiem un cipariem!";
+            registering.value = false;
             return false;
         }
 
@@ -35,6 +38,7 @@ import { async } from '@firebase/util';
         const existingUser = await getDoc(doc(db, "users", username.value));
         if (existingUser.exists()) {
             errorMsg.value = "Lietotājvārds jau ir aizņemts!"
+            registering.value = false;
             return false;
         }
 
@@ -61,15 +65,9 @@ import { async } from '@firebase/util';
             createUserWithEmailAndPassword(auth, email.value, password.value)
             .then(async (data) => {
                 console.log("Successfully registered!");
-                console.log("Id" + data.user.uid);
+                // console.log("Id" + data.user.uid);
                 // Add user to database
-                await setDoc(doc(db, 'users', data.user.uid), {
-                    username: username.value,
-                    friends: [],
-                    sentFriendReq: [],
-                    incomingFriendReq: [],
-                    trees: [],
-                });
+                await setDoc(doc(db, 'users', data.user.uid), structuredClone(defaultUser));
 
                 // Move user to home
                 router.push('/');
@@ -96,46 +94,32 @@ import { async } from '@firebase/util';
                         errorMsg.value = "Kaut kas nogāja greizi. Mēģiniet nomainīt ē-pastu vai paroli.";
                         break;
                 }
+                registering.value = false;
             });
         });
     };
 
-    // Get user document
-    const getUser = async (uid) => {
-        const userDoc = await getDoc(doc(db, "users", uid));
-        if (userDoc.exists()) {
-            return userDoc;
-        } else {
-            return null;
-        }
-    }
-
     // Sign in with google
-    const signInWithGoogle = () => {
-        if (!checkUsername()) {
-            return;
-        }
-        const provider = new GoogleAuthProvider();
-        signInWithPopup(getAuth(), provider)
-        .then( async (result) => {
-            console.log(result.user);
-            // Check if user exists
-            const uDoc = await getDoc(doc(db, 'users', result.user.uid))
-            if (!uDoc.exists()) { // Make user if doesn't exist
-                await setDoc(doc(db, 'users', result.user.uid), {
-                    username: username.value,
-                    friends: [],
-                    sentFriendReq: [],
-                    incomingFriendReq: [],
-                    trees: [],
-                });
-            };
+    const signInWithGoogle = async () => {
+        registering.value = true;
 
-            router.push("/");
-        })
-        .catch((error) => {
-            // Handle error
-        });
+        if (await checkUsername()) {
+            const provider = new GoogleAuthProvider();
+            signInWithPopup(getAuth(), provider)
+            .then( async (result) => {
+                // console.log(result.user);
+                // Check if user exists
+                const uDoc = await getDoc(doc(db, 'users', result.user.uid))
+                if (!uDoc.exists()) { // Make user if doesn't exist
+                    await setDoc(doc(db, 'users', result.user.uid), structuredClone(defaultUser));
+                };
+
+                router.push("/");
+            })
+            .catch((error) => {
+                // Handle error
+            });
+        }
     };
 
     onMounted(() => {
@@ -152,14 +136,14 @@ import { async } from '@firebase/util';
         <p><input type="password" placeholder="Parole" v-model="password"/></p>
         <p v-if="errorMsg">{{ errorMsg }}</p>
         <p v-if="!registering">
-            <button class="hover-up-p" @click="register">
+            <button class="hover-up-p" @click="register()">
                 <p>Iesniegt</p>
                 <div class="bg"></div>
             </button>
         </p>
 
         <p v-if="!registering">
-            <button class="hover-up-p" @click="signInWithGoogle">
+            <button class="hover-up-p" @click="signInWithGoogle()">
                 <p>Pievienoties ar Google</p>
                 <div class="bg accent"></div>
             </button>
