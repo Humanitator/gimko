@@ -53,16 +53,15 @@
     const signInWithGoogle = async () => {
         signingIn.value = true;
         const provider = new GoogleAuthProvider();
-        const result = await signInWithPopup(getAuth(), provider)
+        const result = await signInWithPopup(getAuth(), provider);
         // console.log(result.user); // Log user
 
         // Check if user exists
-        const uDoc = await getDoc(doc(db, 'users', result.user.uid))
+        const uDoc = await getDoc(doc(db, 'users', result.user.uid));
         if (!uDoc.exists()) { // Make user if doesn't exist
             console.log("No account!");
             signOut(getAuth()).then(() => {
-                alert("Netika atrasts lietotājs! Izveidojiet kontu!");
-                router.push("/register");
+                errorMsg.value = "Netika atrasts lietotājs. Izveidojiet kontu!"
             });
         } else {
             router.push("/");

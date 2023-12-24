@@ -105,20 +105,17 @@
 
         if (await checkUsername()) {
             const provider = new GoogleAuthProvider();
-            signInWithPopup(getAuth(), provider)
-            .then( async (result) => {
-                // console.log(result.user);
-                // Check if user exists
-                const uDoc = await getDoc(doc(db, 'users', result.user.uid))
-                if (!uDoc.exists()) { // Make user if doesn't exist
-                    await setDoc(doc(db, 'users', result.user.uid), structuredClone(defaultUser));
-                };
+            const result = await signInWithPopup(getAuth(), provider);
+            // console.log(result.user);
+            // Check if user exists
+            const uDoc = await getDoc(doc(db, 'users', result.user.uid));
+            if (!uDoc.exists()) { // Make user if doesn't exist
+                let user = structuredClone(defaultUser);
+                user.username = username.value;
+                await setDoc(doc(db, 'users', result.user.uid), user);
+            };
 
-                router.push("/");
-            })
-            .catch((error) => {
-                // Handle error
-            });
+            router.push("/");
         }
     };
 
