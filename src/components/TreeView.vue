@@ -217,7 +217,7 @@
         makeTree();
         calcTreeWidth();
         closePersonInfo();
-
+        updateTree();
     };
 
     // Sort generation by spuoses
