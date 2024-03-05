@@ -591,6 +591,18 @@
         currentPID = null;
     };
 
+    // Check if any windows are open
+    const popupOpen = () => {
+        return (
+            personIsSelected.value ||
+            adddingPerson.value ||
+            editingPerson.value ||
+            editedPerson.value ||
+            removePID.value ||
+            currentPID
+        );
+    };
+
     // Set person vertical position
     const setPersonPosV = (pid, i) => {
         const pos = (
@@ -674,7 +686,7 @@
 
     let lastX;
     const handleMouseMove = (event) => {
-        if (mouseDown) {
+        if (mouseDown && !popupOpen()) {
             const x = event.screenX;
 
             if (lastX) {
@@ -708,7 +720,7 @@
     </div>
 
     <!-- Tree view -->
-    <div v-if="hasAccess && tree && ftree" class="prevent-select" style="position: relative;">
+    <div v-if="hasAccess && tree && ftree" :class="(popupOpen())?'':'prevent-select'" style="position: relative;">
         <h1>{{ tree.name }}</h1>
 
         <!-- People -->
@@ -989,7 +1001,7 @@
         <!-- Error mesasge -->
         <div class="error-message z-10" :style="(errorMsg.length > 0)?'':'transform: translateX(-50%) translateY(calc(100% + 20pt))'">
             <p>{{ errorMsg }}</p>
-            <div class="bg red op-40"></div>
+            <div class="bg red op-60"></div>
         </div>
        
         <!--  IF NO PERSON EXISTS -->

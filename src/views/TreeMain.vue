@@ -74,7 +74,6 @@
             });
             router.go(); // Reload page
         } else {
-        // docSnap.data() will be undefined in this case
             console.log("No document for user!");
         }
     };

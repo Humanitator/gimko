@@ -79,16 +79,18 @@
     // Send a friend request
     const sendFriendRequest = async (pid) => {
         let person = (await getPersonDoc(pid)).data();
+        console.log("Set incoming");
         await updateDoc(doc(db, "users", pid), {
-            incomingFriendReq: [...person.sentFriendReq, auth.value.currentUser.uid],
+            'incomingFriendReq': [...person.sentFriendReq, auth.value.currentUser.uid],
         });
 
         // Update local user ref
         user.value.sentFriendReq.push(pid);
 
+        console.log("Set sent");
         // Update DB user
         await updateDoc(doc(db, "users", auth.value.currentUser.uid), {
-            sentFriendReq: [...user.value.sentFriendReq],
+            'sentFriendReq': [...user.value.sentFriendReq],
         });
 
         // Add to local ref
@@ -115,16 +117,16 @@
 
         // Update DB user
         await updateDoc(doc(db, "users", auth.value.currentUser.uid), {
-            incomingFriendReq: [...user.value.incomingFriendReq],
-            friends: [...user.value.friends],
+            'incomingFriendReq': [...user.value.incomingFriendReq],
+            'friends': [...user.value.friends],
         });
 
         // Remove from local person
         person.sentFriendReq.splice(person.sentFriendReq.splice(auth.value.currentUser.uid), 1);
 
         await updateDoc(doc(db, "users", pid), {
-            sentFriendReq: [...person.sentFriendReq],
-            friends: [...person.friends, auth.value.currentUser.uid],
+            'sentFriendReq': [...person.sentFriendReq],
+            'friends': [...person.friends, auth.value.currentUser.uid],
         });
     };
 
@@ -140,10 +142,10 @@
         user.value.incomingFriendReq.splice(person.incomingFriendReq.indexOf(pid));
 
         // Remove from person
-        safeUpdateDoc('/users', pid, { sentFriendReq: [ ...person.sentFriendReq] });
+        safeUpdateDoc('/users', pid, { 'sentFriendReq': [ ...person.sentFriendReq] });
 
         // Remove from user
-        safeUpdateDoc('/users', auth.value.currentUser.uid, { incomingFriendReq: [ ...user.value.incomingFriendReq] });
+        safeUpdateDoc('/users', auth.value.currentUser.uid, { 'incomingFriendReq': [ ...user.value.incomingFriendReq] });
     };
 
     // Cancel a sent friend request
@@ -158,10 +160,10 @@
         user.value.sentFriendReq.splice(user.value.sentFriendReq.indexOf(pid), 1);
 
         // Remove from person
-        safeUpdateDoc('/users', pid, { incomingFriendReq: [...person.incomingFriendReq] });
+        safeUpdateDoc('/users', pid, { 'incomingFriendReq': [...person.incomingFriendReq] });
         
         // Remove from user
-        safeUpdateDoc('/users', auth.value.currentUser.uid, { sentFriendReq: [...user.value.sentFriendReq] });
+        safeUpdateDoc('/users', auth.value.currentUser.uid, { 'sentFriendReq': [...user.value.sentFriendReq] });
     };
 
     // Get friends
@@ -182,10 +184,10 @@
         user.value.friends.splice(user.value.friends.indexOf(pid), 1);
         
         // Remove in person
-        safeUpdateDoc('/users', pid, { friends: [...person.friends]})
+        safeUpdateDoc('/users', pid, { 'friends': [...person.friends]})
 
         // Remove in user
-        safeUpdateDoc('/users', auth.value.currentUser.uid, { friends: [...user.value.friends] });
+        safeUpdateDoc('/users', auth.value.currentUser.uid, { 'friends': [...user.value.friends] });
     };
 
     // Load person data
@@ -200,7 +202,7 @@
     const addToTree = async (pid, tid) => {
         const person = (await getPersonDoc(pid)).data();
         await updateDoc(doc(db, "users", pid), {
-            trees: [...person.trees, tid],
+            'trees': [...person.trees, tid],
         });
 
         location.reload();
@@ -211,7 +213,7 @@
         const person = (await getPersonDoc(pid)).data();
         person.trees.splice(person.trees.indexOf(tid), 1);
         await updateDoc(doc(db, "users", pid), {
-            trees: [...person.trees],
+            'trees': [...person.trees],
         });
 
         location.reload();
