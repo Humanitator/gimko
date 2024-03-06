@@ -29,23 +29,36 @@
     let auth = getAuth();
 
     // Get current tree
-    let tree = ref();
+    const tree = ref();
+    const treeData = ref();
     const getTree =  async () => {
         console.log("Getting Tree");
         const treeDoc = await getDoc(doc(db, "trees", tid));
-        if (treeDoc.exists()) {
+        const treeDataDoc = await getDoc(doc(db, ("trees/"+tid+"/private/"), "data"));
+        if (treeDoc.exists() && treeDataDoc.exists()) {
             console.log("Tree found!");
             tree.value = treeDoc.data();
+            treeData.value = treeDataDoc.data();
+            console.log(treeData.value);
             
             // Set biggest PID
             biggestPID = 0;
-            tree.value.people.forEach(person => {
+            treeData.value.people.forEach(person => {
                 if (person.id >= biggestPID) {
                     biggestPID = person.id;
                 }
             });
 
-            console.log(tree.value.people);
+            console.log(tree.value);
+            console.log(treeData.value.people);
+
+            // Move data from deprecated field
+            if (tree.value.people) {
+                treeData.value.people = structuredClone(tree.value.people);
+                delete tree.value["people"];
+                console.log("Moved people")
+                updateTree();
+            }
             
             // Set dates
             // tree.value.people.forEach(person => {
@@ -64,24 +77,37 @@
 
     // Set the tree
     const updateTree = async () => {
-        if (tree.value) {
+        if (treeData.value && tree.value) {
             const treeDoc = doc(db, "trees", tid);
             let formattedTree = structuredClone(tree.value);
+
+            const treeDataDoc = doc(db, ("trees/"+tid+"/private"), "data");
+            let formattedTreeData = structuredClone(treeData.value);
             // Format tree to json
-            formattedTree.people.forEach(person => {
-                // person.dob = person.dob.toJSON();
-                // person.dod = person.dod.toJSON();
-            });
+            // formattedTree.people.forEach(person => {
+            //     person.dob = person.dob.toJSON();
+            //     person.dod = person.dod.toJSON();
+            // });
 
             // Update tree document
             await updateDoc(treeDoc, formattedTree)
             .then(() => {
                 console.log("Tree update success!");
-                showError("Saglabāts sekmīgi!")
             })
             .catch(() => {
-                console.log("Tree update failed!");
-                showError("Neizdevās saglabāt!")
+                console.warn("Tree update failed!");
+                showError("Neizdevās saglabāt koku!");
+            });
+
+            // Update tree data
+            await updateDoc(treeDataDoc, formattedTreeData)
+            .then(() => {
+                console.log("Tree data update success!");
+                showError("Saglabāts sekmīgi!");
+            })
+            .catch(() => {
+                console.warn("Tree data update failed!");
+                showError("Neizdevās saglabāt koka datus!");
             });
         }
     }
@@ -98,13 +124,13 @@
                     arr.push(null);
                     return arr;
                 } else {
-                    const person = tree.value.people.find(p => p.id == id);
-                    arr.push(tree.value.people.find(p => p.id == id));
+                    const person = treeData.value.people.find(p => p.id == id);
+                    arr.push(treeData.value.people.find(p => p.id == id));
                 }
             });
             return arr;
         } else {
-            return tree.value.people.find(p => p.id == ID);
+            return treeData.value.people.find(p => p.id == ID);
         }
     };
 
@@ -173,7 +199,7 @@
     const treeDepth = ref(0);
     const calcTreeDepth = () => {
         let depth = 0;
-        tree.value.people.forEach(person => {
+        treeData.value.people.forEach(person => {
             const pdepth = getDepth(person) + 1;
             if (pdepth > depth) {
                 depth = pdepth;
@@ -186,7 +212,7 @@
     // Make full tree
     let ftree = ref();
     const makeTree = () => {
-        if (tree.value.people.length == 0) {
+        if (treeData.value.people.length == 0) {
             ftree.value = [];
             return;
         }
@@ -194,7 +220,7 @@
         for (let i = 0; i < treeDepth.value; i++) {
             ftree.value.push([]);
         }
-        tree.value.people.forEach((person) => {
+        treeData.value.people.forEach((person) => {
             ftree.value[getDepth(person)].push(person);
         });
         sortGen();
@@ -204,7 +230,7 @@
     // Refresh tree
     const refreshTree = () => {
         ftreePoses.value = [];
-        tree.value.people.forEach((person, i) => {
+        treeData.value.people.forEach((person, i) => {
             ftreePoses.value.push({
                 pid: person.id,
                 layer: null,
@@ -332,7 +358,7 @@
         biggestPID++;
 
         // Add person to tree
-        tree.value.people.push(structuredClone(personObj));
+        treeData.value.people.push(structuredClone(personObj));
         // console.log(tree.value.people); // Log tree
 
         // Reset person variable
@@ -418,7 +444,7 @@
         }
 
         // Remove from tree
-        tree.value.people.splice(tree.value.people.indexOf(person), 1);
+        treeData.value.people.splice(tree.value.people.indexOf(person), 1);
         
         // Refresh tree
         refreshTree();
@@ -427,7 +453,7 @@
     // Confirm a edit
     const confirmEdit = () => {
         // Overwrite
-        tree.value.people[tree.value.people.indexOf(getPerson(editedPerson.value.id))] = editedPerson.value;
+        treeData.value.people[treeData.value.people.indexOf(getPerson(editedPerson.value.id))] = editedPerson.value;
         // console.log(tree.value.people);
 
         console.log("Person edit success!");
@@ -565,7 +591,7 @@
     const selectedPerson = ref();
     const personIsSelected = ref(false);
     const showPersonInfo = (id) => {
-        selectedPerson.value = tree.value.people.find(p => p.id == id);
+        selectedPerson.value = treeData.value.people.find(p => p.id == id);
         // console.log(selectedPerson.value);
         personIsSelected.value = true;
     };
@@ -575,7 +601,7 @@
     const editedPerson = ref();
     const editPerson = (id) => {
         closePersonInfo();
-        editedPerson.value = structuredClone(tree.value.people.find(p => p.id == id));
+        editedPerson.value = structuredClone(treeData.value.people.find(p => p.id == id));
         editingPerson.value = true;
     };
 
@@ -720,11 +746,11 @@
     </div>
 
     <!-- Tree view -->
-    <div v-if="hasAccess && tree && ftree" :class="(popupOpen())?'':'prevent-select'" style="position: relative;">
+    <div v-if="hasAccess && tree && treeData && ftree" :class="(popupOpen())?'':'prevent-select'" style="position: relative;">
         <h1>{{ tree.name }}</h1>
 
         <!-- People -->
-        <div class="people-tree" v-if="tree.people.length > 0" :style="{ left: offsetX + 'px' }">
+        <div class="people-tree" v-if="treeData.people.length > 0" :style="{ left: offsetX + 'px' }">
             <div class="tree-gen" v-for="(gen, i) in ftree">
                 <div class="person" v-for="(person, j) in gen" :style="{
                     width: tPersonWidth + 'pt',
@@ -975,7 +1001,7 @@
         </div>
 
         <!-- UPDATE TREE -->
-        <button class="exit-button hover-up-p" v-if="tree.people.length != 0" @click="updateTree()">
+        <button class="exit-button hover-up-p" v-if="treeData.people.length != 0" @click="updateTree()">
             <p>Saglabāt koku</p>
             <div class="bg accent"></div>
         </button>
@@ -1006,7 +1032,7 @@
        
         <!--  IF NO PERSON EXISTS -->
         <!-- Add new person form -->
-        <div class="add-person-container" v-if="tree.people.length == 0">
+        <div class="add-person-container" v-if="treeData.people.length == 0">
             <h2>Pievienot personu</h2>
             <p>Vārds: <input type="text" v-model="newPerson.name"></p>
             <p>Dzimšanas datums: <input type="date" v-model="newPerson.dob"></p>

@@ -2,7 +2,7 @@
     import { onMounted, ref } from 'vue';
     import { getAuth } from 'firebase/auth';
     import db from "../firebase/init.js";
-    import { defaultTree } from "../firebase/defaultStructs"
+    import { defaultTree, defaultTreePrivates } from "../firebase/defaultStructs"
     import { doc, addDoc, setDoc, getDoc, getDocs, query, collection, updateDoc, where } from "firebase/firestore";
     import { useRouter } from 'vue-router';
 
@@ -48,6 +48,8 @@
             newTreeName.value = "Jauns koks";
         }
 
+        console.log("test3")
+
         const treeColRef = collection(db, 'trees');
         // Check if tree exists
         const q = query(treeColRef, where('name', '==', newTreeName.value));
@@ -57,12 +59,17 @@
             return;
         }
 
+        console.log("test2")
+
         // Make new tree
         const treeObj = structuredClone(defaultTree);
         treeObj.name = newTreeName.value;
         treeObj.ownerID = auth.currentUser.uid;
 
         const treeRef = await addDoc(treeColRef, treeObj);
+        await setDoc(doc(db, "data", ("/trees/" + treeRef.id + "/private"), structuredClone(defaultTreePrivates)));
+        
+        console.log("test")
 
         // Get user trees
         const userRef = doc(db, "users", auth.currentUser.uid);

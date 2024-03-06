@@ -14,6 +14,10 @@ export const defaultTree = {
     name: "",
     ownerID: "",
     isPublic: false,
+}
+
+// Default struct for private tree variables
+export const defaultTreePrivate = {
     people: [],
 }
 
