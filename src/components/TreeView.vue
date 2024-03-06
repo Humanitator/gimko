@@ -6,6 +6,7 @@
     import { useRouter } from 'vue-router';
     import personPointer from '@/classes/personPointer.js';
     import { defaultTreePerson, defaultPersonArticle } from '@/firebase/defaultStructs';
+import { safeGetDoc } from '@/firebase/fbEasy';
 
     const router = useRouter();
     const tid = router.currentRoute.value.params.id; // ID of current tree
@@ -33,51 +34,58 @@
     const treeData = ref();
     const getTree =  async () => {
         console.log("Getting Tree");
-        const treeDoc = await getDoc(doc(db, "trees", tid));
-        const treeDataDoc = await getDoc(doc(db, ("trees/"+tid+"/private/"), "data"));
-        if (treeDoc.exists() && treeDataDoc.exists()) {
-            console.log("Tree found!");
-            tree.value = treeDoc.data();
-            treeData.value = treeDataDoc.data();
-            console.log(treeData.value);
-            
-            // Set biggest PID
-            biggestPID = 0;
-            treeData.value.people.forEach(person => {
-                if (person.id >= biggestPID) {
-                    biggestPID = person.id;
+        try {
+            const treeDoc = await getDoc(doc(db, "trees", tid));
+            const treeDataDoc = await getDoc(doc(db, ("trees/"+tid+"/private/"), "data"));
+
+            if (treeDoc.exists() && treeDataDoc.exists()) {
+                console.log("Tree found!");
+                tree.value = treeDoc.data();
+                treeData.value = treeDataDoc.data();
+                console.log(treeData.value);
+                
+                // Set biggest PID
+                biggestPID = 0;
+                treeData.value.people.forEach(person => {
+                    if (person.id >= biggestPID) {
+                        biggestPID = person.id;
+                    }
+                });
+
+                console.log(tree.value);
+                console.log(treeData.value.people);
+
+                // Move data from deprecated field
+                if (tree.value.people) {
+                    treeData.value.people = structuredClone(tree.value.people);
+                    delete tree.value["people"];
+                    console.log("Moved people")
+                    updateTree();
                 }
-            });
+                
+                // Set dates
+                // tree.value.people.forEach(person => {
+                //     person.dob = new Date(person.dob);
+                //     person.dod = new Date(person.dod);
+                // });
 
-            console.log(tree.value);
-            console.log(treeData.value.people);
-
-            // Move data from deprecated field
-            if (tree.value.people) {
-                treeData.value.people = structuredClone(tree.value.people);
-                delete tree.value["people"];
-                console.log("Moved people")
-                updateTree();
+                // Make tree
+                refreshTree();
+            } else {
+                console.log("Tree not found!");
+                alert("Koks netika atrasts!");
+                router.back();
             }
-            
-            // Set dates
-            // tree.value.people.forEach(person => {
-            //     person.dob = new Date(person.dob);
-            //     person.dod = new Date(person.dod);
-            // });
-
-            // Make tree
-            refreshTree();
-        } else {
-            console.log("Tree not found!");
-            alert("Tree not found!");
-            router.back();
+        } catch (error) {
+            alert("Nav pieejas kokam vai koks neeksistē!");
+            router.push("/tree");
         }
     };
 
     // Set the tree
     const updateTree = async () => {
-        if (treeData.value && tree.value) {
+        const canEdit = (await safeGetDoc("users", auth.currentUser.uid)).data().trees.includes(tid);
+        if (treeData.value && tree.value && canEdit) {
             const treeDoc = doc(db, "trees", tid);
             let formattedTree = structuredClone(tree.value);
 
@@ -109,6 +117,8 @@
                 console.warn("Tree data update failed!");
                 showError("Neizdevās saglabāt koka datus!");
             });
+        } else if (!canEdit) {
+            showError("Nav tiesību mainīt koku!");
         }
     }
 
@@ -691,11 +701,9 @@
             console.log("User found!");
             if (userDoc.data().trees.includes(tid)) {
                 hasAccess.value = true;
-                console.log("Access granted!");  
+                console.log("User has access to tree!");  
             } else {
-                console.log("User doesn't have access!");
-                alert("Jums nav piekļuves šajam kokam!");
-                router.push("/tree")
+                console.warn("User can only spectate tree!")
             }
         } else {
             console.log("User has no document!");
@@ -731,9 +739,8 @@
     onMounted(async () => {
         document.title = "gimko | Koka skats";
         await checkAccess();
-        if (hasAccess.value) {
-            getTree();
-        }
+        getTree();
+
     });
 
     document.onmousemove = handleMouseMove;
@@ -741,12 +748,12 @@
 
 <template>
     <!-- Checking access -->
-    <div v-if="!hasAccess">
-        <h1>Pārbauda piekļuves atļauju...</h1>
+    <div v-if="!tree">
+        <h1>Ielādē koku...</h1>
     </div>
 
     <!-- Tree view -->
-    <div v-if="hasAccess && tree && treeData && ftree" :class="(popupOpen())?'':'prevent-select'" style="position: relative;">
+    <div v-if="tree && treeData && ftree" :class="(popupOpen())?'':'prevent-select'" style="position: relative;">
         <h1>{{ tree.name }}</h1>
 
         <!-- People -->
@@ -769,12 +776,12 @@
                             <div class="bg secondary op-50"></div>
                         </button>
                         <!-- Add (Only for primary) -->
-                        <button v-if="person.primaryParents.length > 0" class="hover-up-p" @click="selectNewPersonType(person.id)"> 
+                        <button v-if="hasAccess && person.primaryParents.length > 0" class="hover-up-p" @click="selectNewPersonType(person.id)"> 
                             <p>PIEVIENOT</p>
                             <div class="bg secondary op-50"></div>
                         </button>
                         <!-- Remove person -->
-                        <button class="hover-up-p" @click="() => removePID = person.id">
+                        <button class="hover-up-p" v-if="hasAccess" @click="() => removePID = person.id">
                             <p>DZĒST</p>
                             <div class="bg red op-80"></div>
                         </button>
@@ -861,7 +868,7 @@
                 </article>
             </div>
 
-            <button class="edit-button hover-up-p" @click="editPerson(selectedPerson.id)">
+            <button class="edit-button hover-up-p" v-if="hasAccess" @click="editPerson(selectedPerson.id)">
                 <p>REDIĢĒT</p>
                 <div class="bg accent op-30"></div>
             </button>
@@ -873,7 +880,7 @@
         </div>
 
         <!-- Edit person info -->
-        <div class="edit-person-info-container" v-bind:class="(editingPerson)?'shown':''">
+        <div class="edit-person-info-container" v-if="hasAccess" v-bind:class="(editingPerson)?'shown':''">
             <h2>Rediģēt personas info</h2>
             <!-- Add form -->
             <div class="add-person-form" v-if="editedPerson">
@@ -923,7 +930,7 @@
         </div>
 
         <!-- Select person type -->
-        <div class="select-person-type-container" v-bind:class="(currentNewPersonType == '' && adddingPerson)?'shown-0--50':''">
+        <div class="select-person-type-container" v-if="hasAccess" v-bind:class="(currentNewPersonType == '' && adddingPerson)?'shown-0--50':''">
             <h4 style="text-align: center;">Select person type</h4>
 
             <button class="select-new-person-button hover-up-p z-1" @click="addPersonFromType('child')">
@@ -950,7 +957,7 @@
         </div>
 
         <!-- Add person from type -->
-        <div class="edit-person-info-container" v-bind:class="(currentNewPersonType != '')?'shown':''">
+        <div class="edit-person-info-container" v-if="hasAccess" v-bind:class="(currentNewPersonType != '')?'shown':''">
             <h2 v-if="currentNewPersonType == 'child'">Pievienot bērnu</h2>
             <h2 v-if="currentNewPersonType == 'spouse'">Pievienot dzīvesbiedru</h2>
             <h2 v-if="currentNewPersonType == 'parent'">Pievienot vecāku</h2>
@@ -1001,13 +1008,13 @@
         </div>
 
         <!-- UPDATE TREE -->
-        <button class="exit-button hover-up-p" v-if="treeData.people.length != 0" @click="updateTree()">
+        <button class="exit-button hover-up-p" v-if="hasAccess && treeData.people.length != 0" @click="updateTree()">
             <p>Saglabāt koku</p>
             <div class="bg accent"></div>
         </button>
 
         <!-- Confirm person removal -->
-        <div class="confirm-person-remove" v-bind:class="(removePID)?'shown-0--50':''">
+        <div class="confirm-person-remove" v-if="hasAccess" v-bind:class="(removePID)?'shown-0--50':''">
             <h2>Vai jūs esat drošs?</h2>
             <button v-if="removePID" class="hover-up-p" @click="closePersonInfo()">
                 <p>Nē</p>
@@ -1032,7 +1039,7 @@
        
         <!--  IF NO PERSON EXISTS -->
         <!-- Add new person form -->
-        <div class="add-person-container" v-if="treeData.people.length == 0">
+        <div class="add-person-container" v-if="hasAccess && treeData.people.length == 0">
             <h2>Pievienot personu</h2>
             <p>Vārds: <input type="text" v-model="newPerson.name"></p>
             <p>Dzimšanas datums: <input type="date" v-model="newPerson.dob"></p>

@@ -45,7 +45,7 @@
   </div>
 
   <footer>
-    <p>© 2023 Andris Seļāvo</p>
+    <p>© 2024 Andris Seļāvo</p>
   </footer>
 </template>
 
